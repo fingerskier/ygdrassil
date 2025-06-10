@@ -1,4 +1,5 @@
-import StateButton from '@/StateButton'
+import {StateButton} from '@/StateMachine'
+
 
 export default function Controls() {
     return <div>
