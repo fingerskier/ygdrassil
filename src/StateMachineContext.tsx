@@ -1,5 +1,49 @@
-import React, { ReactElement, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
-import { StateMachineContext, StateDefinition } from './StateMachineContext';
+import React, {
+  createContext,
+  ReactElement,
+  ReactNode,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+
+export interface StateDefinition {
+  /** JSX representing the state’s UI (captured from the `<State>` child) */
+  element: ReactElement;
+  onEnter?: () => void;
+  onExit?: () => void;
+}
+
+interface Ctx {
+  currentState: string;
+  gotoState: (name: string) => void;
+  is: (name: string) => boolean;
+}
+
+export const StateMachineContext = createContext<Ctx | undefined>(undefined);
+
+export const useStateMachine = (): Ctx => {
+  const ctx = useContext(StateMachineContext);
+  if (!ctx) throw new Error('useStateMachine must be used inside <StateMachine>');
+  return ctx;
+}
+
+
+export interface StateProps {
+  name: string;
+  onEnter?: () => void;
+  onExit?: () => void;
+  children: ReactElement | null;
+}
+
+/**
+ * Declarative state node.
+ * Rendered *only* when its parent <StateMachine> marks it active.
+ */
+export const State: React.FC<StateProps> = ({ children }) => <>{children}</>;
+
 
 interface StateMachineProps {
   initial: string;
