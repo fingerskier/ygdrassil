@@ -1,5 +1,4 @@
-import {useState} from 'react'
-import {useStateMachine} from './StateMachineContext'
+import {useStateMachine} from '@/StateMachine'
 
 
 export default function Controls() {

@@ -1,13 +1,11 @@
-import { useState } from 'react'
-import {StateMachine, State} from './StateMachineContext'
-import One from './One'
-import Two from './Two'
-import Three from './Three'
-import Controls from './Controls'
+import {StateMachine, State} from '@/StateMachine'
+import One from '@/com/One'
+import Two from '@/com/Two'
+import Three from '@/com/Three'
+import Controls from '@/com/Controls'
 
-function App() {
-  const [count, setCount] = useState(0)
 
+export default function App() {
   return <>
     <StateMachine initial='one'>
       <Controls />
@@ -26,5 +24,3 @@ function App() {
     </StateMachine>
   </>
 }
-
-export default App
