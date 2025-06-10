@@ -7,7 +7,7 @@ import Controls from '@/com/Controls'
 
 export default function App() {
   return <>
-    <StateMachine initial='one'>
+    <StateMachine initial='one' name='app'>
       <Controls />
 
       <State name="one">
