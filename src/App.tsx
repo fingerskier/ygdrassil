@@ -10,15 +10,15 @@ export default function App() {
     <StateMachine initial='one' name='app'>
       <Controls />
 
-      <State name="one">
+      <State name="one" transition={['two']}>
         <One />
       </State>
 
-      <State name="two">
+      <State name="two" transition={['one', 'three']}>
         <Two />
       </State>
 
-      <State name="three">
+      <State name="three" transition={['one']}>
         <Three />
       </State>
     </StateMachine>
