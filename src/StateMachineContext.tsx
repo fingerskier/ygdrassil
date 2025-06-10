@@ -58,10 +58,14 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children })
 
   /** Registry of all states declared as children */
   const statesRef = useRef<Record<string, StateDefinition>>({});
+  const staticChildren: ReactNode[] = [];
 
   /* ---------- 1. Build/refresh registry from <State> children ---------- */
   React.Children.forEach(children, child => {
-    if (!React.isValidElement(child)) return;
+    if (!React.isValidElement(child) || child.type !== State) {
+      staticChildren.push(child);
+      return;
+    }
     const { name, onEnter, onExit } = child.props as StateProps;
     statesRef.current[name] = { element: child, onEnter, onExit };
   });
@@ -93,6 +97,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children })
 
   return (
     <StateMachineContext.Provider value={ctxValue}>
+      {staticChildren}
       {active}
     </StateMachineContext.Provider>
   );
