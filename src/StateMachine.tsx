@@ -7,6 +7,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  useEffect,
 } from 'react'
 
 export interface StateDefinition {
@@ -47,14 +48,24 @@ export const State: React.FC<StateProps> = ({ children }) => <>{children}</>;
 
 interface StateMachineProps {
   initial: string;
+  name?: string;
   children: ReactNode;
 }
 
 /**
  * Top-level provider.  Renders ONLY the active state’s children.
  */
-export const StateMachine: React.FC<StateMachineProps> = ({ initial, children }) => {
-  const [currentState, setCurrentState] = useState(initial);
+export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, name }) => {
+  const paramName = `yg-${name ?? '#'}`
+
+  const readParam = () => {
+    const search = window.location.hash.startsWith('#?')
+      ? window.location.hash.slice(2)
+      : ''
+    return new URLSearchParams(search).get(paramName)
+  }
+
+  const [currentState, setCurrentState] = useState(() => readParam() ?? initial)
 
   /** Registry of all states declared as children */
   const statesRef = useRef<Record<string, StateDefinition>>({});
@@ -81,6 +92,27 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children })
       }),
     [],
   );
+
+  /* ---------- Sync hash with state ---------- */
+  useEffect(() => {
+    const params = new URLSearchParams(
+      window.location.hash.startsWith('#?')
+        ? window.location.hash.slice(2)
+        : '',
+    )
+    params.set(paramName, currentState)
+    window.location.hash = `?${params.toString()}`
+  }, [currentState, paramName])
+
+  /* ---------- Watch for external hash changes ---------- */
+  useEffect(() => {
+    const handler = () => {
+      const next = readParam()
+      if (next && next !== currentState) gotoState(next)
+    }
+    window.addEventListener('hashchange', handler)
+    return () => window.removeEventListener('hashchange', handler)
+  }, [currentState, gotoState])
 
   /* ---------- 3. Context value ---------- */
   const ctxValue = useMemo(
