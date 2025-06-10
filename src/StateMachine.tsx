@@ -152,10 +152,13 @@ interface StateButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   to: string
 }
 
-export function StateButton({className, to, children, ...rest }: StateButtonProps) {
-  const { gotoState } = useStateMachine()
+export function StateButton({ to, children, className, ...rest }: StateButtonProps) {
+  const { gotoState, is } = useStateMachine()
+  const classNames = [className, is(to) ? 'active' : undefined]
+    .filter(Boolean)
+    .join(' ')
   return (
-    <button className={className} {...rest} onClick={() => gotoState(to)}>
+    <button {...rest} className={classNames} onClick={() => gotoState(to)}>
       {children ?? to}
     </button>
   )
