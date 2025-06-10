@@ -8,6 +8,7 @@ import React, {
   useRef,
   useState,
   useEffect,
+  type ButtonHTMLAttributes,
 } from 'react'
 
 export interface StateDefinition {
@@ -16,6 +17,7 @@ export interface StateDefinition {
   onEnter?: () => void
   onExit?: () => void
 }
+
 
 interface Ctx {
   currentState: string
@@ -51,6 +53,7 @@ interface StateMachineProps {
   name?: string
   children: ReactNode
 }
+
 
 /**
  * Top-level provider.  Renders ONLY the active state’s children.
@@ -136,7 +139,11 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
 }
 
 
-export default function StateButton({ to, children, ...rest }: StateButtonProps) {
+interface StateButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  to: string
+}
+
+export function StateButton({ to, children, ...rest }: StateButtonProps) {
   const { gotoState } = useStateMachine()
   return (
     <button {...rest} onClick={() => gotoState(to)}>
