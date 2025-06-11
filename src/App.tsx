@@ -1,4 +1,4 @@
-import {StateMachine, State} from '@/StateMachine'
+import {StateMachine, State, StateButton} from '@/StateMachine'
 import One from '@/com/First/One'
 import Two from '@/com/First/Two'
 import Three from '@/com/First/Three'
@@ -10,8 +10,8 @@ import './App.css'
 
 export default function App() {
   return <>
-    <a className='badge' href='?yg-app=one'>Start machine #1</a>
-    <a className='badge' href='?yg-app=two'>Start machine #2</a>
+    <StateButton className='badge' to='one' machine='app'>Start machine #1</StateButton>
+    <StateButton className='badge' to='two' machine='aux'>Start machine #2</StateButton>
 
     <StateMachine name='app'>
       <div className='state machine'>

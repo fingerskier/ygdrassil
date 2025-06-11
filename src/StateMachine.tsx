@@ -240,9 +240,12 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
 
 interface StateButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   to: string
+  machine?: string
 }
 
-export function StateButton({ to, children, className, ...rest }: StateButtonProps) {
+export function StateButton({ to, children, className, machine, ...rest }: StateButtonProps) {
+  if (machine) return <a {...rest} className={className} href={`?yg-${machine}=${to}`}>{children ?? to}</a>
+
   const { gotoState, is } = useStateMachine()
   const classNames = [className, is(to) ? 'active' : undefined]
     .filter(Boolean)
