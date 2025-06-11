@@ -21,19 +21,21 @@ export default function SecondMachine() {
         <Beta />
       </State>
 
-      <State name={M2.ST[2]} transition={M2.gamma}
-        onEnter={() => console.log('gamma entered')}
-        onExit={() => console.log('gamma exited')}
-      >
-        <Gamma />
-      </State>
+      <div>
+        <State name={M2.ST[2]} transition={M2.gamma}
+          onEnter={() => console.log('gamma entered')}
+          onExit={() => console.log('gamma exited')}
+          >
+          <Gamma />
+        </State>
 
-      <State name={M2.ST[3]} transition={M2.delta}
-        onEnter={() => console.log('delta entered')}
-        onExit={() => console.log('delta exited')}
-      >
-        <Delta />
-      </State>
+        <State name={M2.ST[3]} transition={M2.delta}
+          onEnter={() => console.log('delta entered')}
+          onExit={() => console.log('delta exited')}
+          >
+          <Delta />
+        </State>
+      </div>
     </StateMachine>
   </>
 }

@@ -10,8 +10,8 @@ import './App.css'
 
 export default function App() {
   return <>
-    <div className='state machine'>
-      <StateMachine initial='one' name='app'>
+    <StateMachine initial='one' name='app'>
+      <div className='state machine'>
         <h1>First State-Machine</h1>
         <Controls1 />
 
@@ -26,11 +26,13 @@ export default function App() {
         <State name={M1.ST[2]} transition={M1.three}>
           <Three />
         </State>
-      </StateMachine>
-    </div>
+      </div>
+    </StateMachine>
 
     <div className='state machine'>
+      <StateMachine initial='alpha' name='aux'>
         <SecondMachine />
+      </StateMachine>
     </div>
   </>
 }
