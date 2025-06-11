@@ -5,11 +5,11 @@ import {useStateMachine} from '@/StateMachine'
 export default function One() {
     const {query, setQuery} = useStateMachine()
 
-    const [count, setCount] = useState(query.one || 0)
+    const [count, setCount] = useState(Number(query.get('one')) || 0)
     
     useEffect(() => {
-        setQuery({one: +count})
-    }, [count])
+        setQuery({one: String(count)})
+    }, [count, setQuery])
 
     
     return <div>

@@ -24,6 +24,7 @@ interface Ctx {
   currentState: string
   gotoState: (name: string) => void
   is: (name: string) => boolean
+  availableTransitions: string[]
   query: URLSearchParams
   setQuery: (obj: Record<string, string>, replace?: boolean) => void
 }
@@ -167,6 +168,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
       currentState,
       gotoState,
       is: (s: string) => s === currentState,
+      availableTransitions: statesRef.current[currentState]?.transition ?? [],
       query,
       setQuery,
     }),
