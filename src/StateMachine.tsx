@@ -52,17 +52,31 @@ export interface StateProps {
  */
 export const State: React.FC<StateProps> = ({ children }) => <>{children}</>
 
+interface PlaceholderProps {
+  name: string
+  registry: React.MutableRefObject<Record<string, StateDefinition>>
+}
+
+/**
+ * Placeholder inserted in place of a <State> element so the active state
+ * renders at its original location in the tree.
+ */
+function StatePlaceholder({ name, registry }: PlaceholderProps) {
+  const { currentState } = useStateMachine()
+  return currentState === name ? registry.current[name]?.element ?? null : null
+}
+
 function collectStates(
   nodes: ReactNode,
-  registry: Record<string, StateDefinition>,
+  registry: React.MutableRefObject<Record<string, StateDefinition>>,
 ): ReactNode {
   return React.Children.map(nodes, child => {
     if (!React.isValidElement(child)) return child
     const element = child as ReactElement<{ children?: ReactNode }>
     if (element.type === State) {
       const { name, onEnter, onExit, transition } = element.props as StateProps
-      registry[name] = { element, onEnter, onExit, transition }
-      return null
+      registry.current[name] = { element, onEnter, onExit, transition }
+      return <StatePlaceholder key={element.key} name={name} registry={registry} />
     }
     if (element.props.children) {
       const processed = collectStates(element.props.children, registry)
@@ -126,7 +140,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
 
   /* ---------- 1. Build/refresh registry from <State> children ---------- */
   statesRef.current = {}
-  const staticChildren = collectStates(children, statesRef.current)
+  const staticChildren = collectStates(children, statesRef)
 
 
   /* ---------- 2. State transition handler ---------- */
@@ -223,20 +237,10 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
   )
 
 
-  /* ---------- 4. Render active state ---------- */
-  const active =
-    currentState && statesRef.current[currentState]?.element
-      ? statesRef.current[currentState]?.element
-      : null
-
+  /* ---------- 4. Render with placeholders inline ---------- */
   return (
     <StateMachineContext.Provider value={ctxValue}>
-      {currentState ? (
-        <>
-          {staticChildren}
-          {active}
-        </>
-      ) : null}
+      {currentState ? staticChildren : null}
     </StateMachineContext.Provider>
   )
 }
