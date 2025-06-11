@@ -9,45 +9,51 @@ import Controls2 from '@/com/Second/Controls'
 import Gamma from '@/com/Second/Gamma'
 import Delta from '@/com/Second/Delta'
 import {M1, M2} from '@/com/constants'
+import './App.css'
 
 
 export default function App() {
   return <>
-    <StateMachine initial='one' name='app'>
-      <Controls1 />
+    <div className='state machine'>
+      <StateMachine initial='one' name='app'>
+        <h1>First State-Machine</h1>
+        <Controls1 />
 
-      <State name={M1.ST[0]} transition={M1.one}>
-        <One />
-      </State>
+        <State name={M1.ST[0]} transition={M1.one}>
+          <One />
+        </State>
 
-      <State name={M1.ST[1]} transition={M1.two}>
-        <Two />
-      </State>
+        <State name={M1.ST[1]} transition={M1.two}>
+          <Two />
+        </State>
 
-      <State name={M1.ST[2]} transition={M1.three}>
-        <Three />
-      </State>
-    </StateMachine>
+        <State name={M1.ST[2]} transition={M1.three}>
+          <Three />
+        </State>
+      </StateMachine>
+    </div>
 
-    <StateMachine initial='alpha' name='aux'>
-      <h1>A Second State-Machine</h1>
-      <Controls2 />
+    <div className='state machine'>
+      <StateMachine initial='alpha' name='aux'>
+        <h1>A Second State-Machine</h1>
+        <Controls2 />
 
-      <State name={M2.ST[0]} transition={M2.alpha}>
-        <Alpha />
-      </State>
+        <State name={M2.ST[0]} transition={M2.alpha}>
+          <Alpha />
+        </State>
 
-      <State name={M2.ST[1]} transition={M2.beta}>
-        <Beta />
-      </State>
+        <State name={M2.ST[1]} transition={M2.beta}>
+          <Beta />
+        </State>
 
-      <State name={M2.ST[2]} transition={M2.gamma}>
-        <Gamma />
-      </State>
+        <State name={M2.ST[2]} transition={M2.gamma}>
+          <Gamma />
+        </State>
 
-      <State name={M2.ST[3]} transition={M2.delta}>
-        <Delta />
-      </State>
-    </StateMachine>
+        <State name={M2.ST[3]} transition={M2.delta}>
+          <Delta />
+        </State>
+      </StateMachine>
+    </div>
   </>
 }

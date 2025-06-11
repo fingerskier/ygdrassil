@@ -10,5 +10,5 @@ export const M2 = {
   alpha: [ 'beta' ],
   beta: [ 'alpha', 'gamma' ],
   gamma: [ 'beta', 'delta' ],
-  delta: [ 'alpha', 'gamma' ],
+  delta: [ 'gamma', 'alpha' ],
 }

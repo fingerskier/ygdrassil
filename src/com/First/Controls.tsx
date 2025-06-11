@@ -5,11 +5,11 @@ import {M1} from '@/com/constants'
 
 
 export default function Controls() {
-    const {allowedTransitions, currentState, gotoState} = useStateMachine()
+    const {availableTransitions, gotoState} = useStateMachine()
     
     useEffect(() => {
-        console.log('allowedTransitions', allowedTransitions)
-    }, [allowedTransitions])
+        console.log('allowedTransitions', availableTransitions)
+    }, [availableTransitions])
     
     return <div>
         All States:
@@ -18,7 +18,7 @@ export default function Controls() {
         <br />
 
         Allowed Transitions:
-        {allowedTransitions?.map && allowedTransitions.map(
+        {availableTransitions?.map && availableTransitions.map(
             state => <StateButton key={state} to={state}>{state}</StateButton> 
         )}
 
