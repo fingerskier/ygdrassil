@@ -7,6 +7,7 @@ export default function One() {
 
     const [count, setCount] = useState(Number(query['one']) || 0)
     
+    
     useEffect(() => {
         setQuery({one: String(count)})
     }, [count, setQuery])

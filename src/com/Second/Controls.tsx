@@ -12,11 +12,6 @@ export default function Controls() {
     }, [availableTransitions])
     
     return <div>
-        All States:
-        {M2.ST.map(state => <StateButton key={state} to={state}>{state}</StateButton>)}
-
-        <br />
-
         Allowed Transitions:
         {availableTransitions?.map && availableTransitions.map(
             state => <StateButton key={state} to={state}>{state}</StateButton> 

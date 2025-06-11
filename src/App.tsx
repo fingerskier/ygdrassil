@@ -8,6 +8,7 @@ import Beta from '@/com/Second/Beta'
 import Controls2 from '@/com/Second/Controls'
 import Gamma from '@/com/Second/Gamma'
 import Delta from '@/com/Second/Delta'
+import SecondMachine from '@/com/Second'
 import {M1, M2} from '@/com/constants'
 import './App.css'
 
@@ -34,26 +35,7 @@ export default function App() {
     </div>
 
     <div className='state machine'>
-      <StateMachine initial='alpha' name='aux'>
-        <h1>A Second State-Machine</h1>
-        <Controls2 />
-
-        <State name={M2.ST[0]} transition={M2.alpha}>
-          <Alpha />
-        </State>
-
-        <State name={M2.ST[1]} transition={M2.beta}>
-          <Beta />
-        </State>
-
-        <State name={M2.ST[2]} transition={M2.gamma}>
-          <Gamma />
-        </State>
-
-        <State name={M2.ST[3]} transition={M2.delta}>
-          <Delta />
-        </State>
-      </StateMachine>
+        <SecondMachine />
     </div>
   </>
 }
