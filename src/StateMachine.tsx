@@ -24,6 +24,8 @@ interface Ctx {
   currentState: string
   gotoState: (name: string) => void
   is: (name: string) => boolean
+  query: URLSearchParams
+  setQuery: (obj: Record<string, string>, replace?: boolean) => void
 }
 
 export const StateMachineContext = createContext<Ctx | undefined>(undefined)
@@ -63,14 +65,25 @@ interface StateMachineProps {
 export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, name }) => {
   const paramName = `yg-${name ?? '#'}`
 
-  const readParam = () => {
+  const readParam = useCallback(() => {
     const search = window.location.hash.startsWith('#?')
       ? window.location.hash.slice(2)
       : ''
     return new URLSearchParams(search).get(paramName)
-  }
+  }, [paramName])
+
+  const readQuery = useCallback(
+    () =>
+      new URLSearchParams(
+        window.location.hash.startsWith('#?')
+          ? window.location.hash.slice(2)
+          : '',
+      ),
+    [],
+  )
 
   const [currentState, setCurrentState] = useState(() => readParam() ?? initial)
+  const [query, setQueryState] = useState<URLSearchParams>(() => readQuery())
 
   /** Registry of all states declared as children */
   const statesRef = useRef<Record<string, StateDefinition>>({})
@@ -105,6 +118,26 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     [],
   )
 
+  const setQuery = useCallback(
+    (obj: Record<string, string>, replace = false) => {
+      setQueryState(prev => {
+        const params = replace
+          ? new URLSearchParams()
+          : new URLSearchParams(prev.toString())
+
+        if (replace) {
+          for (const [k, v] of prev.entries()) if (k.startsWith('yg-')) params.set(k, v)
+        }
+
+        for (const [k, v] of Object.entries(obj)) params.set(k, v)
+        const str = params.toString()
+        window.location.hash = `?${str}`
+        return params
+      })
+    },
+    [],
+  )
+
   /* ---------- Sync hash with state ---------- */
   useEffect(() => {
     const params = new URLSearchParams(
@@ -121,10 +154,12 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     const handler = () => {
       const next = readParam()
       if (next && next !== currentState) gotoState(next)
+      setQueryState(readQuery())
     }
+    handler()
     window.addEventListener('hashchange', handler)
     return () => window.removeEventListener('hashchange', handler)
-  }, [currentState, gotoState])
+  }, [currentState, gotoState, readParam, readQuery])
 
   /* ---------- 3. Context value ---------- */
   const ctxValue = useMemo(
@@ -132,8 +167,10 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
       currentState,
       gotoState,
       is: (s: string) => s === currentState,
+      query,
+      setQuery,
     }),
-    [currentState, gotoState],
+    [currentState, gotoState, query, setQuery],
   )
 
   /* ---------- 4. Render active state ---------- */
