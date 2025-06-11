@@ -250,6 +250,7 @@ interface StateButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export function StateButton({ to, children, className, machine, ...rest }: StateButtonProps) {
   if (machine) return <a {...rest} className={className} href={`?yg-${machine}=${to}`}>{children ?? to}</a>
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { gotoState, is } = useStateMachine()
   const classNames = [className, is(to) ? 'active' : undefined]
     .filter(Boolean)

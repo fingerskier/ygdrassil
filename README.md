@@ -13,7 +13,9 @@ shared with a specific step active.
 - `useStateMachine` hook for reading or changing the current state.
 - `availableTransitions` property on the context for listing allowed
   transitions from the active state.
-- `StateButton` convenience component for state navigation.
+- `StateButton` convenience component for state navigation (supports linking
+  to another machine via the `machine` prop).
+- `query` and `setQuery` helpers for persisting extra values in the hash.
 - URL hash integration so state can be persisted across refreshes.
 
 ## Installation
@@ -52,8 +54,15 @@ function Example() {
 }
 ```
 
+Use the `machine` prop to link to a state in another machine on the page:
+
+```tsx
+<StateButton machine="wizard" to="start">Launch wizard</StateButton>
+```
+
 Within any state you can call `useStateMachine()` to programmatically navigate,
-inspect the current state or check which transitions are allowed.
+inspect the current state, read query values or check which transitions are
+allowed.
 
 ```tsx
 import { useStateMachine } from 'ygdrassil'
@@ -70,6 +79,29 @@ function NextButton() {
   )
 }
 ```
+
+## Persisted query values
+
+The hook also exposes a `query` object containing any values stored in the hash
+and a `setQuery()` helper for updating them.  These values survive page refreshes
+just like the current state.
+
+```tsx
+import { useStateMachine } from 'ygdrassil'
+
+function Counter() {
+  const { query, setQuery } = useStateMachine()
+  const count = Number(query.count) || 0
+  return (
+    <button onClick={() => setQuery({ count: count + 1 })}>
+      Count: {count}
+    </button>
+  )
+}
+```
+
+Pass `true` as the second argument to `setQuery` to replace existing values
+instead of merging them.
 
 ## Development
 
