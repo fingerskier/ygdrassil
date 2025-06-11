@@ -21,7 +21,7 @@ export interface StateDefinition {
 
 
 interface Ctx {
-  currentState: string
+  currentState: string | undefined
   gotoState: (name: string) => void
   is: (name: string) => boolean
   availableTransitions: string[]
@@ -79,7 +79,7 @@ function collectStates(
 
 
 interface StateMachineProps {
-  initial: string
+  initial?: string
   name?: string
   children: ReactNode
 }
@@ -112,7 +112,9 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     return Object.fromEntries(entries) as Record<string, string | number>
   }, [])
 
-  const [currentState, setCurrentState] = useState(() => readParam() ?? initial)
+  const [currentState, setCurrentState] = useState<string | undefined>(
+    () => readParam() ?? initial,
+  )
   const [query, setQueryState] = useState<Record<string, string | number>>(() => readQuery())
 
   /** Registry of all states declared as children */
@@ -128,14 +130,14 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     (next: string) =>
       setCurrentState(prev => {
         if (prev === next) return prev; // no-op
-        const allowed = statesRef.current[prev]?.transition
+        const allowed = prev ? statesRef.current[prev]?.transition : undefined
         if (allowed && !allowed.includes(next)) {
           console.warn(
             `Transition from "${prev}" to "${next}" not allowed.`,
           )
           return prev
         }
-        statesRef.current[prev]?.onExit?.()
+        if (prev) statesRef.current[prev]?.onExit?.()
         statesRef.current[next]?.onEnter?.()
         return next
       }),
@@ -169,21 +171,30 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
   
   /* ---------- Sync hash with state ---------- */
   useEffect(() => {
+    if (!initial) return
     const params = new URLSearchParams(
       window.location.hash.startsWith('#?')
         ? window.location.hash.slice(2)
         : '',
     )
-    params.set(paramName, currentState)
+    if (currentState) {
+      params.set(paramName, currentState)
+    } else {
+      params.delete(paramName)
+    }
     window.location.hash = `?${params.toString()}`
-  }, [currentState, paramName])
+  }, [currentState, paramName, initial])
 
 
   /* ---------- Watch for external hash changes ---------- */
   useEffect(() => {
     const handler = () => {
       const next = readParam()
-      if (next && next !== currentState) gotoState(next)
+      if (next) {
+        if (next !== currentState) gotoState(next)
+      } else {
+        setCurrentState(undefined)
+      }
       setQueryState(readQuery())
     }
     handler()
@@ -198,7 +209,9 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
       currentState,
       gotoState,
       is: (s: string) => s === currentState,
-      availableTransitions: statesRef.current[currentState]?.transition ?? [],
+      availableTransitions: currentState
+        ? statesRef.current[currentState]?.transition ?? []
+        : [],
       query,
       setQuery,
     }),
@@ -207,12 +220,19 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
 
 
   /* ---------- 4. Render active state ---------- */
-  const active = statesRef.current[currentState]?.element ?? null
+  const active =
+    currentState && statesRef.current[currentState]?.element
+      ? statesRef.current[currentState]?.element
+      : null
 
   return (
     <StateMachineContext.Provider value={ctxValue}>
-      {staticChildren}
-      {active}
+      {currentState ? (
+        <>
+          {staticChildren}
+          {active}
+        </>
+      ) : null}
     </StateMachineContext.Provider>
   )
 }
