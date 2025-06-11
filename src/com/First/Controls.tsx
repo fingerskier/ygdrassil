@@ -4,7 +4,7 @@ import {M1} from '@/com/constants'
 
 
 export default function Controls() {
-    const {availableTransitions, gotoState, query} = useStateMachine()
+    const {availableTransitions, gotoState} = useStateMachine()
 
     
     return <div>
@@ -22,6 +22,6 @@ export default function Controls() {
 
         <button onClick={() => gotoState('one')}>Reset to One</button>
 
-        <pre>{JSON.stringify(query, null, 2)}</pre>
+        {/* <pre>{JSON.stringify(query, null, 2)}</pre> */}
     </div>
 }

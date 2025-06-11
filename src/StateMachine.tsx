@@ -270,10 +270,11 @@ export function StateButton({ data, replace, to, children, className, ...rest }:
     .filter(Boolean)
     .join(' ')
   
-  if (data) setQuery(data, replace)
-  
   return (
-    <button {...rest} className={classNames} onClick={() => gotoState(to)}>
+    <button {...rest} className={classNames} onClick={() => {
+      if (data) setQuery(data, replace)
+      gotoState(to)
+    }}>
       {children ?? to}
     </button>
   )
@@ -283,6 +284,7 @@ export function StateButton({ data, replace, to, children, className, ...rest }:
 interface ExternalButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   to: string
   machine: string
+  data?: Record<string, string | number>
 }
 
 export function ExternalButton({ data, machine, to, children, className, ...rest }: ExternalButtonProps) {
@@ -296,9 +298,9 @@ export function ExternalButton({ data, machine, to, children, className, ...rest
     // Add/update the machine parameter
     params.set(`yg-${machine}`, to)
 
-    if (data) {
-      for (const [k, v] of Object.entries(data)) params.set(k, v)
-    }
+         if (data) {
+       for (const [k, v] of Object.entries(data)) params.set(k, String(v))
+     }
     
     // Update URL and notify StateMachine
     const newHash = `#?${params.toString()}`
