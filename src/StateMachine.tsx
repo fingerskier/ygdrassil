@@ -115,6 +115,10 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
   const [currentState, setCurrentState] = useState<string | undefined>(
     () => readParam() ?? initial,
   )
+  const currentRef = useRef<string | undefined>(currentState)
+  useEffect(() => {
+    currentRef.current = currentState
+  }, [currentState])
   const [query, setQueryState] = useState<Record<string, string | number>>(() => readQuery())
 
   /** Registry of all states declared as children */
@@ -191,7 +195,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     const handler = () => {
       const next = readParam()
       if (next) {
-        if (next !== currentState) gotoState(next)
+        if (next !== currentRef.current) gotoState(next)
       } else {
         setCurrentState(undefined)
       }
@@ -200,7 +204,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     handler()
     window.addEventListener('hashchange', handler)
     return () => window.removeEventListener('hashchange', handler)
-  }, [currentState, gotoState, readParam, readQuery])
+  }, [gotoState, readParam, readQuery])
 
 
   /* ---------- 3. Context value ---------- */
