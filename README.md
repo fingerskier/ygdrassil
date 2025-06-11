@@ -11,6 +11,8 @@ shared with a specific step active.
 - `State` component for declaring individual states with optional `onEnter`,
   `onExit` and `transition` props.
 - `useStateMachine` hook for reading or changing the current state.
+- `availableTransitions` property on the context for listing allowed
+  transitions from the active state.
 - `StateButton` convenience component for state navigation.
 - URL hash integration so state can be persisted across refreshes.
 
@@ -50,15 +52,22 @@ function Example() {
 }
 ```
 
-Within any state you can call `useStateMachine()` to programmatically navigate or
-to check the current state.
+Within any state you can call `useStateMachine()` to programmatically navigate,
+inspect the current state or check which transitions are allowed.
 
 ```tsx
 import { useStateMachine } from 'ygdrassil'
 
 function NextButton() {
-  const { gotoState } = useStateMachine()
-  return <button onClick={() => gotoState('next')}>Next</button>
+  const { gotoState, availableTransitions } = useStateMachine()
+  return (
+    <button
+      disabled={!availableTransitions.includes('next')}
+      onClick={() => gotoState('next')}
+    >
+      Next
+    </button>
+  )
 }
 ```
 
