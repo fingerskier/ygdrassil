@@ -4,14 +4,14 @@ import {useStateMachine} from '@/StateMachine'
 
 
 export default function Controls() {
-    const {availableTransitions, gotoState} = useStateMachine()
+    const {availableTransitions, currentState, gotoState} = useStateMachine()
     
     useEffect(() => {
         console.log('allowedTransitions', availableTransitions)
     }, [availableTransitions])
     
     return <div>
-        Allowed Transitions:
+        Allowed Transitions {currentState ? `(from ${currentState})` : ''}:
         {availableTransitions?.map && availableTransitions.map(
             state => <StateButton key={state} to={state}>{state}</StateButton> 
         )}

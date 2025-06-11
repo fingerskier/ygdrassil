@@ -89,14 +89,14 @@ interface StateMachineProps {
  * Top-level provider.  Renders ONLY the active state’s children.
  */
 export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, name }) => {
-  const paramName = `yg-${name ?? '#'}`
+  const machineStateParam = `yg-${name ?? '#'}`
 
   const readParam = useCallback(() => {
     const search = window.location.hash.startsWith('#?')
       ? window.location.hash.slice(2)
       : ''
-    return new URLSearchParams(search).get(paramName)
-  }, [paramName])
+    return new URLSearchParams(search).get(machineStateParam)
+  }, [machineStateParam])
 
   const readQuery = useCallback(() => {
     const params = new URLSearchParams(
@@ -182,12 +182,12 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
         : '',
     )
     if (currentState) {
-      params.set(paramName, currentState)
+      params.set(machineStateParam, currentState)
     } else {
-      params.delete(paramName)
+      params.delete(machineStateParam)
     }
     window.location.hash = `?${params.toString()}`
-  }, [currentState, paramName, initial])
+  }, [currentState, machineStateParam, initial])
 
 
   /* ---------- Watch for external hash changes ---------- */
@@ -248,7 +248,7 @@ interface StateButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export function StateButton({ to, children, className, machine, ...rest }: StateButtonProps) {
-  if (machine) return <a {...rest} className={className} href={`?yg-${machine}=${to}`}>{children ?? to}</a>
+  if (machine) return <button {...rest} className={className} onClick={() => window.location.hash = `#?yg-${machine}=${to}`}>{children ?? to}</button>
 
   const { gotoState, is } = useStateMachine()
   const classNames = [className, is(to) ? 'active' : undefined]
