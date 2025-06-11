@@ -143,23 +143,49 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
   const staticChildren = collectStates(children, statesRef)
 
 
-  /* ---------- 2. State transition handler ---------- */
-  const gotoState = useCallback(
-    (next: string) =>
+  /* ---------- 2. State transition handlers ---------- */
+  // Internal state transition (called by hash change handler)
+  const transitionToState = useCallback(
+    (next: string) => {
       setCurrentState(prev => {
         if (prev === next) return prev; // no-op
         const allowed = prev ? statesRef.current[prev]?.transition : undefined
         if (allowed && !allowed.includes(next)) {
-          console.warn(
-            `Transition from "${prev}" to "${next}" not allowed.`,
-          )
+          console.warn(`Transition from "${prev}" to "${next}" not allowed.`)
           return prev
         }
         if (prev) statesRef.current[prev]?.onExit?.()
         statesRef.current[next]?.onEnter?.()
         return next
-      }),
+      })
+    },
     [],
+  )
+
+  // Public gotoState - updates URL, which triggers state change
+  const gotoState = useCallback(
+    (next: string) => {
+      const current = currentRef.current
+      if (current === next) return; // no-op
+      
+      const allowed = current ? statesRef.current[current]?.transition : undefined
+      if (allowed && !allowed.includes(next)) {
+        console.warn(`Transition from "${current}" to "${next}" not allowed.`)
+        return
+      }
+
+      // Update URL hash parameter
+      const currentHash = window.location.hash.startsWith('#?')
+        ? window.location.hash.slice(2)
+        : ''
+      const params = new URLSearchParams(currentHash)
+      params.set(machineStateParam, next)
+      
+      const newHash = `#?${params.toString()}`
+      window.history.pushState(null, '', newHash)
+      window.dispatchEvent(new HashChangeEvent('hashchange'))
+    },
+    [machineStateParam],
   )
 
   
@@ -186,22 +212,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     [],
   )
 
-  
-  /* ---------- Sync hash with state ---------- */
-  useEffect(() => {
-    if (!initial) return
-    const params = new URLSearchParams(
-      window.location.hash.startsWith('#?')
-        ? window.location.hash.slice(2)
-        : '',
-    )
-    if (currentState) {
-      params.set(machineStateParam, currentState)
-    } else {
-      params.delete(machineStateParam)
-    }
-    window.location.hash = `?${params.toString()}`
-  }, [currentState, machineStateParam, initial])
+
 
 
   /* ---------- Watch for external hash changes ---------- */
@@ -209,7 +220,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     const handler = () => {
       const next = readParam()
       if (next) {
-        if (next !== currentRef.current) gotoState(next)
+        if (next !== currentRef.current) transitionToState(next)
       } else {
         setCurrentState(undefined)
       }
@@ -218,7 +229,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     handler()
     window.addEventListener('hashchange', handler)
     return () => window.removeEventListener('hashchange', handler)
-  }, [gotoState, readParam, readQuery])
+  }, [transitionToState, readParam, readQuery])
 
 
   /* ---------- 3. Context value ---------- */
@@ -248,14 +259,18 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
 
 interface StateButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   to: string
+  data?: Record<string, string | number>
+  replace?: boolean
 }
 
-export function StateButton({ to, children, className, ...rest }: StateButtonProps) {
-  const { gotoState, is } = useStateMachine()
+export function StateButton({ data, replace, to, children, className, ...rest }: StateButtonProps) {
+  const { gotoState, is, setQuery } = useStateMachine()
 
   const classNames = [className, is(to) ? 'active' : undefined]
     .filter(Boolean)
     .join(' ')
+  
+  if (data) setQuery(data, replace)
   
   return (
     <button {...rest} className={classNames} onClick={() => gotoState(to)}>
@@ -270,6 +285,24 @@ interface ExternalButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   machine: string
 }
 
-export function ExternalButton({ machine, to, children, className, ...rest }: ExternalButtonProps) {
-  return <button {...rest} className={className} onClick={() => window.history.pushState(null, '', `#?yg-${machine}=${to}`)}>{children ?? to}</button>
+export function ExternalButton({ data, machine, to, children, className, ...rest }: ExternalButtonProps) {
+  return <button {...rest} className={className} onClick={() => {
+    // Parse existing query params
+    const currentHash = window.location.hash.startsWith('#?')
+      ? window.location.hash.slice(2)
+      : ''
+    const params = new URLSearchParams(currentHash)
+    
+    // Add/update the machine parameter
+    params.set(`yg-${machine}`, to)
+
+    if (data) {
+      for (const [k, v] of Object.entries(data)) params.set(k, v)
+    }
+    
+    // Update URL and notify StateMachine
+    const newHash = `#?${params.toString()}`
+    window.history.pushState(null, '', newHash)
+    window.dispatchEvent(new HashChangeEvent('hashchange'))
+  }}>{children ?? to}</button>
 }

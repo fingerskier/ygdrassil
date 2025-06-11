@@ -15,7 +15,10 @@ export default function App() {
     <StateMachine name='app'>
       <div className='state machine'>
         <h1>First State-Machine</h1>
-        <ExternalButton className='badge' to='alpha' machine='aux'>Start machine #2</ExternalButton>
+        <ExternalButton className='badge' 
+          to='alpha' machine='aux'
+          data={{alpha: 0, beta: 'nada', gamma: 0, delta: 0}}
+        >Start machine #2</ExternalButton>
         <Controls1 />
 
         <State name={M1.ST[0]} transition={M1.one}>

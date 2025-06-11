@@ -1,15 +1,11 @@
-import { useEffect } from 'react'
 import {StateButton} from '@/StateMachine'
 import {useStateMachine} from '@/StateMachine'
 import {M1} from '@/com/constants'
 
 
 export default function Controls() {
-    const {availableTransitions, gotoState} = useStateMachine()
-    
-    useEffect(() => {
-        console.log('allowedTransitions', availableTransitions)
-    }, [availableTransitions])
+    const {availableTransitions, gotoState, query} = useStateMachine()
+
     
     return <div>
         All States:
@@ -25,5 +21,7 @@ export default function Controls() {
         <br />
 
         <button onClick={() => gotoState('one')}>Reset to One</button>
+
+        <pre>{JSON.stringify(query, null, 2)}</pre>
     </div>
 }

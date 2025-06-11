@@ -4,7 +4,7 @@ import {useStateMachine} from '@/StateMachine'
 
 
 export default function Controls() {
-    const {availableTransitions, currentState, gotoState} = useStateMachine()
+    const {availableTransitions, currentState, gotoState, query} = useStateMachine()
     
     useEffect(() => {
         console.log('allowedTransitions', availableTransitions)
@@ -20,5 +20,7 @@ export default function Controls() {
 
         <button onClick={() => gotoState('alpha')}>Reset to Alpha</button>
         <button onClick={() => gotoState('flarn')}>Undeclared State Flarn</button>
+
+        <pre>{JSON.stringify(query, null, 2)}</pre>
     </div>
 }
