@@ -52,6 +52,31 @@ export interface StateProps {
  */
 export const State: React.FC<StateProps> = ({ children }) => <>{children}</>
 
+function collectStates(
+  nodes: ReactNode,
+  registry: Record<string, StateDefinition>,
+): ReactNode {
+  return React.Children.map(nodes, child => {
+    if (!React.isValidElement(child)) return child
+    const element = child as ReactElement<{ children?: ReactNode }>
+    if (element.type === State) {
+      const { name, onEnter, onExit, transition } = element.props as StateProps
+      registry[name] = { element, onEnter, onExit, transition }
+      return null
+    }
+    if (element.props.children) {
+      const processed = collectStates(element.props.children, registry)
+      if (processed !== element.props.children) {
+        return React.cloneElement(element, {
+          ...element.props,
+          children: processed,
+        })
+      }
+    }
+    return element
+  })
+}
+
 
 interface StateMachineProps {
   initial: string
@@ -92,18 +117,10 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
 
   /** Registry of all states declared as children */
   const statesRef = useRef<Record<string, StateDefinition>>({})
-  const staticChildren: ReactNode[] = []
-
 
   /* ---------- 1. Build/refresh registry from <State> children ---------- */
-  React.Children.forEach(children, child => {
-    if (!React.isValidElement(child) || child.type !== State) {
-      staticChildren.push(child)
-      return
-    }
-    const { name, onEnter, onExit, transition } = child.props as StateProps
-    statesRef.current[name] = { element: child, onEnter, onExit, transition }
-  })
+  statesRef.current = {}
+  const staticChildren = collectStates(children, statesRef.current)
 
 
   /* ---------- 2. State transition handler ---------- */
