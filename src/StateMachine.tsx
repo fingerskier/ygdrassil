@@ -25,7 +25,7 @@ interface Ctx {
   gotoState: (name: string) => void
   is: (name: string) => boolean
   availableTransitions: string[]
-  query: URLSearchParams
+  query: Record<string, string>
   setQuery: (obj: Record<string, string>, replace?: boolean) => void
 }
 
@@ -73,18 +73,17 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     return new URLSearchParams(search).get(paramName)
   }, [paramName])
 
-  const readQuery = useCallback(
-    () =>
-      new URLSearchParams(
-        window.location.hash.startsWith('#?')
-          ? window.location.hash.slice(2)
-          : '',
-      ),
-    [],
-  )
+  const readQuery = useCallback(() => {
+    const params = new URLSearchParams(
+      window.location.hash.startsWith('#?')
+        ? window.location.hash.slice(2)
+        : '',
+    )
+    return Object.fromEntries(params.entries()) as Record<string, string>
+  }, [])
 
   const [currentState, setCurrentState] = useState(() => readParam() ?? initial)
-  const [query, setQueryState] = useState<URLSearchParams>(() => readQuery())
+  const [query, setQueryState] = useState<Record<string, string>>(() => readQuery())
 
   /** Registry of all states declared as children */
   const statesRef = useRef<Record<string, StateDefinition>>({})
@@ -122,18 +121,16 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
   const setQuery = useCallback(
     (obj: Record<string, string>, replace = false) => {
       setQueryState(prev => {
-        const params = replace
-          ? new URLSearchParams()
-          : new URLSearchParams(prev.toString())
+        const base = replace
+          ? Object.fromEntries(
+              Object.entries(prev).filter(([k]) => k.startsWith('yg-')),
+            )
+          : { ...prev }
 
-        if (replace) {
-          for (const [k, v] of prev.entries()) if (k.startsWith('yg-')) params.set(k, v)
-        }
-
-        for (const [k, v] of Object.entries(obj)) params.set(k, v)
-        const str = params.toString()
+        for (const [k, v] of Object.entries(obj)) base[k] = v
+        const str = new URLSearchParams(base).toString()
         window.location.hash = `?${str}`
-        return params
+        return base
       })
     },
     [],
