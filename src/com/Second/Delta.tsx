@@ -1,4 +1,3 @@
-import {useState} from 'react'
 import {useStateMachine} from '@/StateMachine'
 
 
@@ -7,7 +6,7 @@ export default function Delta() {
     
 
     const restart = ()=>{
-      setQuery({alpha: '0', beta: '0', gamma: '0', delta: '0'})
+      setQuery({alpha: 0, beta: 'nada', gamma: 0, delta: 0})
       gotoState('alpha')
     }
   

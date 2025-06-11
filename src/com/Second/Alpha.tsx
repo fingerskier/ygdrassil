@@ -1,9 +1,8 @@
-import {useState} from 'react'
 import {useStateMachine} from '@/StateMachine'
+
 
 export default function Alpha() {
     const {query, setQuery} = useStateMachine()
-    const [count, setCount] = useState(0)
     
 
     return <div>

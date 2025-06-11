@@ -25,8 +25,8 @@ interface Ctx {
   gotoState: (name: string) => void
   is: (name: string) => boolean
   availableTransitions: string[]
-  query: Record<string, string>
-  setQuery: (obj: Record<string, string>, replace?: boolean) => void
+  query: Record<string, string | number>
+  setQuery: (obj: Record<string, string | number>, replace?: boolean) => void
 }
 
 export const StateMachineContext = createContext<Ctx | undefined>(undefined)
@@ -79,15 +79,21 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
         ? window.location.hash.slice(2)
         : '',
     )
-    return Object.fromEntries(params.entries()) as Record<string, string>
+    const entries = Array.from(params.entries()).map(([k, v]) => {
+      // Try to parse as number if it looks like one
+      const num = Number(v)
+      return [k, !isNaN(num) && v !== '' ? num : v]
+    })
+    return Object.fromEntries(entries) as Record<string, string | number>
   }, [])
 
   const [currentState, setCurrentState] = useState(() => readParam() ?? initial)
-  const [query, setQueryState] = useState<Record<string, string>>(() => readQuery())
+  const [query, setQueryState] = useState<Record<string, string | number>>(() => readQuery())
 
   /** Registry of all states declared as children */
   const statesRef = useRef<Record<string, StateDefinition>>({})
   const staticChildren: ReactNode[] = []
+
 
   /* ---------- 1. Build/refresh registry from <State> children ---------- */
   React.Children.forEach(children, child => {
@@ -98,6 +104,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     const { name, onEnter, onExit, transition } = child.props as StateProps
     statesRef.current[name] = { element: child, onEnter, onExit, transition }
   })
+
 
   /* ---------- 2. State transition handler ---------- */
   const gotoState = useCallback(
@@ -118,8 +125,9 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     [],
   )
 
+  
   const setQuery = useCallback(
-    (obj: Record<string, string>, replace = false) => {
+    (obj: Record<string, string | number>, replace = false) => {
       setQueryState(prev => {
         const base = replace
           ? Object.fromEntries(
@@ -128,7 +136,12 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
           : { ...prev }
 
         for (const [k, v] of Object.entries(obj)) base[k] = v
-        const str = new URLSearchParams(base).toString()
+        
+        // Convert to strings for URL
+        const urlParams = Object.fromEntries(
+          Object.entries(base).map(([k, v]) => [k, String(v)])
+        )
+        const str = new URLSearchParams(urlParams).toString()
         window.location.hash = `?${str}`
         return base
       })
@@ -136,6 +149,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     [],
   )
 
+  
   /* ---------- Sync hash with state ---------- */
   useEffect(() => {
     const params = new URLSearchParams(
@@ -146,6 +160,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     params.set(paramName, currentState)
     window.location.hash = `?${params.toString()}`
   }, [currentState, paramName])
+
 
   /* ---------- Watch for external hash changes ---------- */
   useEffect(() => {
@@ -159,6 +174,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     return () => window.removeEventListener('hashchange', handler)
   }, [currentState, gotoState, readParam, readQuery])
 
+
   /* ---------- 3. Context value ---------- */
   const ctxValue = useMemo(
     () => ({
@@ -171,6 +187,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     }),
     [currentState, gotoState, query, setQuery],
   )
+
 
   /* ---------- 4. Render active state ---------- */
   const active = statesRef.current[currentState]?.element ?? null

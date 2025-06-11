@@ -1,11 +1,14 @@
-import {useState} from 'react'
+import {useStateMachine} from '@/StateMachine'
+
 
 export default function Beta() {
-    const [count, setCount] = useState(0)
+    const {query, setQuery} = useStateMachine()
+
 
     return <div>
         <h1>Beta</h1>
-        <button onClick={() => setCount(count + 1)}>Count</button>
-        <p>Local Count: {count}</p>
+        
+        <label>Persisted string:</label>
+        <input type="text" value={query?.beta} onChange={(e) => setQuery({beta: e.target.value})} />
     </div>
 }

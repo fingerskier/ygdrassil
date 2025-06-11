@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import {StateButton} from '@/StateMachine'
 import {useStateMachine} from '@/StateMachine'
-import {M2} from '@/com/constants'
 
 
 export default function Controls() {
