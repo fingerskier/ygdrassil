@@ -1,19 +1,26 @@
 import { useEffect } from 'react'
 import {StateButton} from '@/StateMachine'
 import {useStateMachine} from '@/StateMachine'
+import {M1} from '@/com/constants'
 
 
 export default function Controls() {
-    const {currentState, gotoState} = useStateMachine()
+    const {allowedTransitions, currentState, gotoState} = useStateMachine()
     
     useEffect(() => {
-        console.log('currentState', currentState)
-    }, [currentState])
+        console.log('allowedTransitions', allowedTransitions)
+    }, [allowedTransitions])
     
     return <div>
-        <StateButton to='one'>One</StateButton>
-        <StateButton to='two'>Two</StateButton>
-        <StateButton to='three'>Three</StateButton>
+        All States:
+        {M1.ST.map(state => <StateButton key={state} to={state}>{state}</StateButton>)}
+
+        <br />
+
+        Allowed Transitions:
+        {allowedTransitions?.map && allowedTransitions.map(
+            state => <StateButton key={state} to={state}>{state}</StateButton> 
+        )}
 
         <br />
 

@@ -108,7 +108,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
         const allowed = statesRef.current[prev]?.transition
         if (allowed && !allowed.includes(next)) {
           console.warn(
-            `Transition from "${prev}" to "${next}" not allowed. Allowed: ${allowed.join(', ')}`,
+            `Transition from "${prev}" to "${next}" not allowed.`,
           )
           return prev
         }
