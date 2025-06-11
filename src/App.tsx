@@ -37,5 +37,7 @@ export default function App() {
         <SecondMachine />
       </StateMachine>
     </div>
+
+    <a href='/'>Restart</a>
   </>
 }
