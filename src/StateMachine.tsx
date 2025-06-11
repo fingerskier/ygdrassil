@@ -248,20 +248,28 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
 
 interface StateButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   to: string
-  machine?: string
 }
 
-export function StateButton({ to, children, className, machine, ...rest }: StateButtonProps) {
-  if (machine) return <button {...rest} className={className} onClick={() => window.location.hash = `#?yg-${machine}=${to}`}>{children ?? to}</button>
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+export function StateButton({ to, children, className, ...rest }: StateButtonProps) {
   const { gotoState, is } = useStateMachine()
+
   const classNames = [className, is(to) ? 'active' : undefined]
     .filter(Boolean)
     .join(' ')
+  
   return (
     <button {...rest} className={classNames} onClick={() => gotoState(to)}>
       {children ?? to}
     </button>
   )
+}
+
+
+interface ExternalButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  to: string
+  machine: string
+}
+
+export function ExternalButton({ machine, to, children, className, ...rest }: ExternalButtonProps) {
+  return <button {...rest} className={className} onClick={() => window.history.pushState(null, '', `#?yg-${machine}=${to}`)}>{children ?? to}</button>
 }

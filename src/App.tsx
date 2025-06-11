@@ -1,4 +1,4 @@
-import {StateMachine, State, StateButton} from '@/StateMachine'
+import {StateMachine, State, StateButton, ExternalButton} from '@/StateMachine'
 import One from '@/com/First/One'
 import Two from '@/com/First/Two'
 import Three from '@/com/First/Three'
@@ -10,12 +10,12 @@ import './App.css'
 
 export default function App() {
   return <>
-    <StateButton className='badge' to='one' machine='app'>Start machine #1</StateButton>
-    <StateButton className='badge' to='two' machine='aux'>Start machine #2</StateButton>
+    <ExternalButton className='badge' to='one' machine='app'>Start machine #1</ExternalButton>
 
     <StateMachine name='app'>
       <div className='state machine'>
         <h1>First State-Machine</h1>
+        <ExternalButton className='badge' to='alpha' machine='aux'>Start machine #2</ExternalButton>
         <Controls1 />
 
         <State name={M1.ST[0]} transition={M1.one}>
