@@ -10,7 +10,10 @@ import './App.css'
 
 export default function App() {
   return <>
-    <StateMachine initial='one' name='app'>
+    <a className='badge' href='?yg-app=one'>Start machine #1</a>
+    <a className='badge' href='?yg-app=two'>Start machine #2</a>
+
+    <StateMachine name='app'>
       <div className='state machine'>
         <h1>First State-Machine</h1>
         <Controls1 />
@@ -30,7 +33,7 @@ export default function App() {
     </StateMachine>
 
     <div className='state machine'>
-      <StateMachine initial='alpha' name='aux'>
+      <StateMachine name='aux'>
         <SecondMachine />
       </StateMachine>
     </div>

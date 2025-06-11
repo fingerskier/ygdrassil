@@ -5,6 +5,13 @@
   text-align: center;
 }
 
+a.badge {
+  background-color: #000;
+  color: #fff;
+  margin: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+}
 
 .state.machine {
   border: 1px solid #ccc;
