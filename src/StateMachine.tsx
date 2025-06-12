@@ -120,15 +120,20 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
   }, [currentState])
   const [query, setQueryState] = useState<Record<string, string | number>>(() => readQuery())
 
+  // Force a re-render when states register or unregister so availableTransitions updates
+  const [version, setVersion] = useState(0)
+
   /** Registry of all states */
   const statesRef = useRef<Record<string, StateDefinition>>({})
 
   const registerState = useCallback((name: string, definition: StateDefinition) => {
     statesRef.current[name] = definition
+    setVersion(v => v + 1)
   }, [])
 
   const unregisterState = useCallback((name: string) => {
     delete statesRef.current[name]
+    setVersion(v => v + 1)
   }, [])
 
   /* ---------- State transition handlers ---------- */
@@ -236,20 +241,23 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
 
   /* ---------- Context value ---------- */
   const ctxValue = useMemo(
-    () => ({
-      currentState,
-      gotoState,
-      close,
-      is: (s: string) => s === currentState,
-      availableTransitions: currentState
-        ? statesRef.current[currentState]?.transition ?? []
-        : [],
-      query,
-      setQuery,
-      registerState,
-      unregisterState,
-    }),
-    [currentState, gotoState, close, query, setQuery, registerState, unregisterState],
+    () => {
+      void version // include version so memo recomputes when states change
+      return {
+        currentState,
+        gotoState,
+        close,
+        is: (s: string) => s === currentState,
+        availableTransitions: currentState
+          ? statesRef.current[currentState]?.transition ?? []
+          : [],
+        query,
+        setQuery,
+        registerState,
+        unregisterState,
+      }
+    },
+    [currentState, gotoState, close, query, setQuery, registerState, unregisterState, version],
   )
 
   /* ---------- Render children normally ---------- */
