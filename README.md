@@ -103,6 +103,10 @@ function Counter() {
 Pass `true` as the second argument to `setQuery` to replace existing values
 instead of merging them.
 
+To remove a query parameter pass `null` as its value (using `undefined` also
+works). When `replace` is `false` only the provided keys are deleted from the
+current query string.
+
 ## Development
 
 This repository includes a small demo app. After installing dependencies run:
