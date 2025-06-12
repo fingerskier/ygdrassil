@@ -31,7 +31,10 @@ interface Ctx extends StateRegistrationCtx {
   is: (name: string) => boolean
   availableTransitions: string[]
   query: Record<string, string | number>
-  setQuery: (obj: Record<string, string | number>, replace?: boolean) => void
+  setQuery: (
+    obj: Record<string, string | number | null | undefined>,
+    replace?: boolean,
+  ) => void
 }
 
 export const StateMachineContext = createContext<Ctx | undefined>(undefined)
@@ -187,7 +190,10 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
   }, [machineStateParam])
 
   const setQuery = useCallback(
-    (obj: Record<string, string | number>, replace = false) => {
+    (
+      obj: Record<string, string | number | null | undefined>,
+      replace = false,
+    ) => {
       setQueryState(prev => {
         const base = replace
           ? Object.fromEntries(
@@ -195,8 +201,11 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
             )
           : { ...prev }
 
-        for (const [k, v] of Object.entries(obj)) base[k] = v
-        
+        for (const [k, v] of Object.entries(obj)) {
+          if (v == null) delete base[k]
+          else base[k] = v
+        }
+
         // Convert to strings for URL
         const urlParams = Object.fromEntries(
           Object.entries(base).map(([k, v]) => [k, String(v)])
