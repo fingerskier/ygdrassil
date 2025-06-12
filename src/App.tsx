@@ -21,22 +21,22 @@ export default function App() {
         >Start machine #2</ExternalButton>
         <Controls1 />
 
-        <State name={M1.ST[0]} transition={M1.one}>
+        <State name={M1.ST[0]}>
           <One />
         </State>
 
-        <State name={M1.ST[1]} transition={M1.two}>
+        <State name={M1.ST[1]}>
           <Two />
         </State>
 
-        <State name={M1.ST[2]} transition={M1.three}>
+        <State name={M1.ST[2]}>
           <Three />
         </State>
       </div>
     </StateMachine>
 
     <div className='state machine'>
-      <StateMachine name='aux'>
+      <StateMachine name='aux' initial='alpha'>
         <SecondMachine />
       </StateMachine>
     </div>

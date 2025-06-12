@@ -12,17 +12,22 @@ import React, {
 } from 'react'
 
 export interface StateDefinition {
-  /** JSX representing the state’s UI (captured from the `<State>` child) */
+  /** JSX representing the state's UI (captured from the `<State>` child) */
   element: ReactElement
   onEnter?: () => void
   onExit?: () => void
   transition?: string[]
 }
 
+interface StateRegistrationCtx {
+  registerState: (name: string, definition: StateDefinition) => void
+  unregisterState: (name: string) => void
+}
 
-interface Ctx {
+interface Ctx extends StateRegistrationCtx {
   currentState: string | undefined
   gotoState: (name: string) => void
+  close: () => void
   is: (name: string) => boolean
   availableTransitions: string[]
   query: Record<string, string | number>
@@ -37,7 +42,6 @@ export const useStateMachine = (): Ctx => {
   return ctx
 }
 
-
 export interface StateProps {
   name: string
   onEnter?: () => void
@@ -48,49 +52,28 @@ export interface StateProps {
 
 /**
  * Declarative state node.
- * Rendered *only* when its parent <StateMachine> marks it active.
+ * Registers itself with the StateMachine and renders only when active.
  */
-export const State: React.FC<StateProps> = ({ children }) => <>{children}</>
-
-interface PlaceholderProps {
-  name: string
-  registry: React.MutableRefObject<Record<string, StateDefinition>>
-}
-
-/**
- * Placeholder inserted in place of a <State> element so the active state
- * renders at its original location in the tree.
- */
-function StatePlaceholder({ name, registry }: PlaceholderProps) {
-  const { currentState } = useStateMachine()
-  return currentState === name ? registry.current[name]?.element ?? null : null
-}
-
-function collectStates(
-  nodes: ReactNode,
-  registry: React.MutableRefObject<Record<string, StateDefinition>>,
-): ReactNode {
-  return React.Children.map(nodes, child => {
-    if (!React.isValidElement(child)) return child
-    const element = child as ReactElement<{ children?: ReactNode }>
-    if (element.type === State) {
-      const { name, onEnter, onExit, transition } = element.props as StateProps
-      registry.current[name] = { element, onEnter, onExit, transition }
-      return <StatePlaceholder key={element.key} name={name} registry={registry} />
+export const State: React.FC<StateProps> = ({ name, onEnter, onExit, transition, children }) => {
+  const { registerState, unregisterState, currentState } = useStateMachine()
+  
+  useEffect(() => {
+    const definition: StateDefinition = {
+      element: children || <></>,
+      onEnter,
+      onExit,
+      transition
     }
-    if (element.props.children) {
-      const processed = collectStates(element.props.children, registry)
-      if (processed !== element.props.children) {
-        return React.cloneElement(element, {
-          ...element.props,
-          children: processed,
-        })
-      }
+    registerState(name, definition)
+    
+    return () => {
+      unregisterState(name)
     }
-    return element
-  })
+  }, [name, children, onEnter, onExit, transition, registerState, unregisterState])
+  
+  // Only render children when this state is active
+  return currentState === name ? <>{children}</> : null
 }
-
 
 interface StateMachineProps {
   initial?: string
@@ -98,9 +81,8 @@ interface StateMachineProps {
   children: ReactNode
 }
 
-
 /**
- * Top-level provider.  Renders ONLY the active state’s children.
+ * Top-level provider. Manages state registration and transitions.
  */
 export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, name }) => {
   const machineStateParam = `yg-${name ?? '#'}`
@@ -135,20 +117,23 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
   }, [currentState])
   const [query, setQueryState] = useState<Record<string, string | number>>(() => readQuery())
 
-  /** Registry of all states declared as children */
+  /** Registry of all states */
   const statesRef = useRef<Record<string, StateDefinition>>({})
 
-  /* ---------- 1. Build/refresh registry from <State> children ---------- */
-  statesRef.current = {}
-  const staticChildren = collectStates(children, statesRef)
+  const registerState = useCallback((name: string, definition: StateDefinition) => {
+    statesRef.current[name] = definition
+  }, [])
 
+  const unregisterState = useCallback((name: string) => {
+    delete statesRef.current[name]
+  }, [])
 
-  /* ---------- 2. State transition handlers ---------- */
+  /* ---------- State transition handlers ---------- */
   // Internal state transition (called by hash change handler)
   const transitionToState = useCallback(
     (next: string) => {
       setCurrentState(prev => {
-        if (prev === next) return prev; // no-op
+        if (prev === next) return prev // no-op
         const allowed = prev ? statesRef.current[prev]?.transition : undefined
         if (allowed && !allowed.includes(next)) {
           console.warn(`Transition from "${prev}" to "${next}" not allowed.`)
@@ -166,7 +151,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
   const gotoState = useCallback(
     (next: string) => {
       const current = currentRef.current
-      if (current === next) return; // no-op
+      if (current === next) return // no-op
       
       const allowed = current ? statesRef.current[current]?.transition : undefined
       if (allowed && !allowed.includes(next)) {
@@ -188,7 +173,19 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     [machineStateParam],
   )
 
-  
+  // Close the state machine - removes state param from URL
+  const close = useCallback(() => {
+    const currentHash = window.location.hash.startsWith('#?')
+      ? window.location.hash.slice(2)
+      : ''
+    const params = new URLSearchParams(currentHash)
+    params.delete(machineStateParam)
+    
+    const newHash = params.toString() ? `#?${params.toString()}` : ''
+    window.history.pushState(null, '', newHash)
+    window.dispatchEvent(new HashChangeEvent('hashchange'))
+  }, [machineStateParam])
+
   const setQuery = useCallback(
     (obj: Record<string, string | number>, replace = false) => {
       setQueryState(prev => {
@@ -212,9 +209,6 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     [],
   )
 
-
-
-
   /* ---------- Watch for external hash changes ---------- */
   useEffect(() => {
     const handler = () => {
@@ -231,31 +225,31 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     return () => window.removeEventListener('hashchange', handler)
   }, [transitionToState, readParam, readQuery])
 
-
-  /* ---------- 3. Context value ---------- */
+  /* ---------- Context value ---------- */
   const ctxValue = useMemo(
     () => ({
       currentState,
       gotoState,
+      close,
       is: (s: string) => s === currentState,
       availableTransitions: currentState
         ? statesRef.current[currentState]?.transition ?? []
         : [],
       query,
       setQuery,
+      registerState,
+      unregisterState,
     }),
-    [currentState, gotoState, query, setQuery],
+    [currentState, gotoState, close, query, setQuery, registerState, unregisterState],
   )
 
-
-  /* ---------- 4. Render with placeholders inline ---------- */
+  /* ---------- Render children normally ---------- */
   return (
     <StateMachineContext.Provider value={ctxValue}>
-      {currentState ? staticChildren : null}
+      {currentState ? children : null}
     </StateMachineContext.Provider>
   )
 }
-
 
 interface StateButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   to: string
@@ -280,7 +274,6 @@ export function StateButton({ data, replace, to, children, className, ...rest }:
   )
 }
 
-
 interface ExternalButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   to: string
   machine: string
@@ -298,9 +291,9 @@ export function ExternalButton({ data, machine, to, children, className, ...rest
     // Add/update the machine parameter
     params.set(`yg-${machine}`, to)
 
-         if (data) {
-       for (const [k, v] of Object.entries(data)) params.set(k, String(v))
-     }
+    if (data) {
+      for (const [k, v] of Object.entries(data)) params.set(k, String(v))
+    }
     
     // Update URL and notify StateMachine
     const newHash = `#?${params.toString()}`
