@@ -11,12 +11,14 @@
     "src/StateMachine.tsx"
   ],
   "scripts": {
+    "deploy": "npm run build&&gh-pages -d dist",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "gh-pages": "^6.3.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
