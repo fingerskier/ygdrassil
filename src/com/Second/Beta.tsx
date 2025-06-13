@@ -10,5 +10,7 @@ export default function Beta() {
         
         <label>Persisted string:</label>
         <input type="text" value={query?.beta} onChange={(e) => setQuery({beta: e.target.value})} />
+
+        <pre>{JSON.stringify(query, null, 2)}</pre>
     </div>
 }

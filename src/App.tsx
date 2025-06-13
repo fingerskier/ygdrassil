@@ -10,6 +10,8 @@ import './App.css'
 
 export default function App() {
   return <>
+    <a href='/'>Restart</a>
+
     <ExternalButton className='badge' to='one' machine='app'>Start machine #1</ExternalButton>
 
     <StateMachine name='app'>
@@ -40,7 +42,5 @@ export default function App() {
         <SecondMachine />
       </StateMachine>
     </div>
-
-    <a href='/'>Restart</a>
   </>
 }
