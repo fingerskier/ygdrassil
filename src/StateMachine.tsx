@@ -283,8 +283,8 @@ export function StateButton({ data, replace, to, children, className, ...rest }:
   
   return (
     <button {...rest} className={classNames} onClick={() => {
-      if (data) setQuery(data, replace)
       gotoState(to)
+      if (data) setQuery(data, replace)
     }}>
       {children ?? to}
     </button>
