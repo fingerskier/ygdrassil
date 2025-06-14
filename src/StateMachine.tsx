@@ -326,9 +326,11 @@ interface StateLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   to: string
   data?: Record<string, string | number>
   replace?: boolean
+  /** Optional target for the underlying anchor. Blank values are ignored */
+  target?: string
 }
 
-export function StateLink({ data, replace, to, children, className, ...rest }: StateLinkProps) {
+export function StateLink({ data, replace, to, target, children, className, ...rest }: StateLinkProps) {
   const { is, query, param } = useStateMachine()
 
   const classNames = [className, is(to) ? 'active' : undefined]
@@ -354,16 +356,27 @@ export function StateLink({ data, replace, to, children, className, ...rest }: S
     return `#?${new URLSearchParams(urlParams).toString()}`
   }, [to, data, replace, query, param])
 
-  return <a {...rest} className={classNames} href={href}>{children ?? to}</a>
+  return (
+    <a
+      {...rest}
+      {...(target ? { target } : {})}
+      className={classNames}
+      href={href}
+    >
+      {children ?? to}
+    </a>
+  )
 }
 
 interface ExternalLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   to: string
   machine: string
   data?: Record<string, string | number>
+  /** Optional target for the underlying anchor. Blank values are ignored */
+  target?: string
 }
 
-export function ExternalLink({ data, machine, to, children, className, ...rest }: ExternalLinkProps) {
+export function ExternalLink({ data, machine, to, target, children, className, ...rest }: ExternalLinkProps) {
   const href = useMemo(() => {
     const currentHash = window.location.hash.startsWith('#?')
       ? window.location.hash.slice(2)
@@ -379,5 +392,14 @@ export function ExternalLink({ data, machine, to, children, className, ...rest }
     return `#?${params.toString()}`
   }, [to, data, machine])
 
-  return <a {...rest} className={className} href={href}>{children ?? to}</a>
+  return (
+    <a
+      {...rest}
+      {...(target ? { target } : {})}
+      className={className}
+      href={href}
+    >
+      {children ?? to}
+    </a>
+  )
 }
