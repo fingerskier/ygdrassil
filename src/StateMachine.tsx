@@ -35,6 +35,8 @@ interface Ctx extends StateRegistrationCtx {
     obj: Record<string, string | number | null | undefined>,
     replace?: boolean,
   ) => void
+  /** Hash parameter used by this machine */
+  param: string
 }
 
 export const StateMachineContext = createContext<Ctx | undefined>(undefined)
@@ -255,9 +257,10 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
         setQuery,
         registerState,
         unregisterState,
+        param: machineStateParam,
       }
     },
-    [currentState, gotoState, close, query, setQuery, registerState, unregisterState, version],
+    [currentState, gotoState, close, query, setQuery, registerState, unregisterState, machineStateParam, version],
   )
 
   /* ---------- Render children normally ---------- */
@@ -317,4 +320,64 @@ export function ExternalButton({ data, machine, to, children, className, ...rest
     window.history.pushState(null, '', newHash)
     window.dispatchEvent(new HashChangeEvent('hashchange'))
   }}>{children ?? to}</button>
+}
+
+interface StateLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+  to: string
+  data?: Record<string, string | number>
+  replace?: boolean
+}
+
+export function StateLink({ data, replace, to, children, className, ...rest }: StateLinkProps) {
+  const { is, query, param } = useStateMachine()
+
+  const classNames = [className, is(to) ? 'active' : undefined]
+    .filter(Boolean)
+    .join(' ')
+
+  const href = useMemo(() => {
+    const base = replace
+      ? Object.fromEntries(
+          Object.entries(query).filter(([k]) => k.startsWith('yg-')),
+        )
+      : { ...query }
+    base[param] = to
+    if (data) {
+      for (const [k, v] of Object.entries(data)) {
+        if (v == null) delete base[k]
+        else base[k] = v
+      }
+    }
+    const urlParams = Object.fromEntries(
+      Object.entries(base).map(([k, v]) => [k, String(v)]),
+    )
+    return `#?${new URLSearchParams(urlParams).toString()}`
+  }, [to, data, replace, query, param])
+
+  return <a {...rest} className={classNames} href={href}>{children ?? to}</a>
+}
+
+interface ExternalLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+  to: string
+  machine: string
+  data?: Record<string, string | number>
+}
+
+export function ExternalLink({ data, machine, to, children, className, ...rest }: ExternalLinkProps) {
+  const href = useMemo(() => {
+    const currentHash = window.location.hash.startsWith('#?')
+      ? window.location.hash.slice(2)
+      : ''
+    const params = new URLSearchParams(currentHash)
+    params.set(`yg-${machine}`, to)
+    if (data) {
+      for (const [k, v] of Object.entries(data)) {
+        if (v == null) params.delete(k)
+        else params.set(k, String(v))
+      }
+    }
+    return `#?${params.toString()}`
+  }, [to, data, machine])
+
+  return <a {...rest} className={className} href={href}>{children ?? to}</a>
 }
