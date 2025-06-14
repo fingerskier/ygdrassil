@@ -15,6 +15,7 @@ shared with a specific step active.
   transitions from the active state.
 - `StateButton` convenience component for state navigation (supports linking
   to another machine via the `machine` prop).
+- `StateLink` and `ExternalLink` components for anchor-based navigation.
 - `query` and `setQuery` helpers for persisting extra values in the hash.
 - URL hash integration so state can be persisted across refreshes.
 
@@ -58,6 +59,12 @@ Use the `machine` prop to link to a state in another machine on the page:
 
 ```tsx
 <StateButton machine="wizard" to="start">Launch wizard</StateButton>
+```
+
+Prefer `<StateLink>`/`<ExternalLink>` when you need a traditional anchor:
+
+```tsx
+<StateLink to="two">Go to step two</StateLink>
 ```
 
 Within any state you can call `useStateMachine()` to programmatically navigate,
