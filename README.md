@@ -15,7 +15,7 @@ shared with a specific step active.
   transitions from the active state.
 - `StateButton` convenience component for state navigation (supports linking
   to another machine via the `machine` prop).
-- `StateLink` and `ExternalLink` components for anchor-based navigation.
+- `StateLink` and `ExternalLink` components for anchor-based navigation (support a `target` prop).
 - `query` and `setQuery` helpers for persisting extra values in the hash.
 - URL hash integration so state can be persisted across refreshes.
 
@@ -66,6 +66,7 @@ Prefer `<StateLink>`/`<ExternalLink>` when you need a traditional anchor:
 ```tsx
 <StateLink to="two">Go to step two</StateLink>
 ```
+You can pass `target` to either link component; blank values are ignored so `target="_blank"` works as expected.
 
 Within any state you can call `useStateMachine()` to programmatically navigate,
 inspect the current state, read query values or check which transitions are
