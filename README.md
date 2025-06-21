@@ -18,6 +18,7 @@ shared with a specific step active.
 - `StateLink` and `ExternalLink` components for anchor-based navigation (support a `target` prop).
 - `query` and `setQuery` helpers for persisting extra values in the hash.
 - URL hash integration so state can be persisted across refreshes.
+- Providing an `initial` state automatically updates the URL hash on load.
 
 ## Installation
 
