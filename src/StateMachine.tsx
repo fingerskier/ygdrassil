@@ -225,6 +225,21 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     [],
   )
 
+  /* ---------- Push initial state to the URL on mount ---------- */
+  useEffect(() => {
+    if (!initial) return
+    const existing = readParam()
+    if (!existing) {
+      const currentHash = window.location.hash.startsWith('#?')
+        ? window.location.hash.slice(2)
+        : ''
+      const params = new URLSearchParams(currentHash)
+      params.set(machineStateParam, initial)
+      const newHash = `#?${params.toString()}`
+      window.history.replaceState(null, '', newHash)
+    }
+  }, [initial, readParam, machineStateParam])
+
   /* ---------- Watch for external hash changes ---------- */
   useEffect(() => {
     const handler = () => {
