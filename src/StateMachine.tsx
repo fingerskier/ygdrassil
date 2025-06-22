@@ -61,7 +61,7 @@ export interface StateProps {
  */
 export const State: React.FC<StateProps> = ({ name, onEnter, onExit, transition, children }) => {
   const { registerState, unregisterState, currentState } = useStateMachine()
-  
+
   useEffect(() => {
     const definition: StateDefinition = {
       element: children || <></>,
@@ -70,11 +70,15 @@ export const State: React.FC<StateProps> = ({ name, onEnter, onExit, transition,
       transition
     }
     registerState(name, definition)
-    
+
     return () => {
       unregisterState(name)
     }
-  }, [name, children, onEnter, onExit, transition, registerState, unregisterState])
+  // children is intentionally excluded from the dependency array to avoid
+  // infinite re-registration loops since React recreates elements on every
+  // render. The definition is updated only when relevant props change.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name, onEnter, onExit, transition, registerState, unregisterState])
   
   // Only render children when this state is active
   return currentState === name ? <>{children}</> : null
