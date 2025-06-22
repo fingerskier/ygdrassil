@@ -1,7 +1,12 @@
-import {StateButton} from '@/StateMachine'
-import {useStateMachine} from '@/StateMachine'
+import {StateButton,useStateMachine} from '@/StateMachine'
 import { useEffect } from 'react'
 
+const defaults = {
+    alpha: 0,
+    beta: 'nada',
+    gamma: 0,
+    delta: 0
+}
 
 export default function Controls() {
     const {availableTransitions, currentState, gotoState, close} = useStateMachine()
@@ -18,7 +23,7 @@ export default function Controls() {
 
         <br />
 
-        <button onClick={() => gotoState('alpha')}>Reset to Alpha</button>
+        <StateButton to='alpha' data={defaults}>Reset to Alpha</StateButton>
         <button onClick={() => gotoState('flarn')}>Undeclared State Flarn</button>
 
         {/* <pre>{JSON.stringify(query, null, 2)}</pre> */}
