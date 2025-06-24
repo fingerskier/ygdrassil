@@ -292,7 +292,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
 
 interface StateButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   to: string
-  data?: Record<string, string | number>
+  data?: Record<string, string | number | null | undefined>
   replace?: boolean
 }
 

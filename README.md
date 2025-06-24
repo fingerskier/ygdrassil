@@ -14,7 +14,8 @@ shared with a specific step active.
 - `availableTransitions` property on the context for listing allowed
   transitions from the active state.
 - `StateButton` convenience component for state navigation (supports linking
-  to another machine via the `machine` prop).
+  to another machine via the `machine` prop). The `data` prop merges values
+  into the query string—pass `null` to remove a parameter.
 - `StateLink` and `ExternalLink` components for anchor-based navigation (support a `target` prop).
 - `query` and `setQuery` helpers for persisting extra values in the hash.
 - URL hash integration so state can be persisted across refreshes.
