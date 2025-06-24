@@ -1,6 +1,6 @@
 {
   "name": "ygdrassil",
-  "version": "2025.6.17",
+  "version": "2025.6.18",
   "type": "module",
   "main": "./src/StateMachine.tsx",
   "types": "./src/StateMachine.tsx",
