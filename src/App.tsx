@@ -5,13 +5,19 @@ import Three from '@/com/First/Three'
 import Controls1 from '@/com/First/Controls'
 import SecondMachine from '@/com/Second'
 import {M1} from '@/com/constants'
+
 import './App.css'
+import logo from '@/assets/logo.png'
 
 
 export default function App() {
   return <>
     <div className='banner'>
-      <h1>Ygdrassil</h1>
+      <h1>
+        <img src={logo} alt='Ygdrassil logo' height="64" />
+        Ygdrassil
+        <img src={logo} alt='Ygdrassil logo' height="64" />
+      </h1>
       <p>A basic, declarative React state machine library.</p>
       <p>
         <a href='https://github.com/fingerskier/ygdrassil' target='_blank'>GitHub</a>
