@@ -11,11 +11,12 @@ export default function One() {
     useEffect(() => {
         setQuery({one: String(count)})
     }, [count, setQuery])
-
+    
     
     return <div>
         <h1>One</h1>
         <button onClick={() => setCount(count + 1)}>Count</button>
         <p>Count: {count}</p>
+        <p>This state remembers count via query-param</p>
     </div>
 }

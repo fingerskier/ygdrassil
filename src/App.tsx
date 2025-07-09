@@ -14,7 +14,7 @@ export default function App() {
 
     <ExternalButton className='badge' to='one' machine='app'>Start machine #1</ExternalButton>
 
-    <StateMachine name='app' className='state machine'>
+    <StateMachine name='app' className='state machine one'>
       <h1>First State-Machine</h1>
         <ExternalButton className='badge'
           to='alpha' machine='aux'
@@ -35,7 +35,7 @@ export default function App() {
         </State>
     </StateMachine>
 
-    <StateMachine name='aux' initial='alpha' className='state machine'>
+    <StateMachine name='aux' initial='alpha'>
         <SecondMachine />
     </StateMachine>
   </>}

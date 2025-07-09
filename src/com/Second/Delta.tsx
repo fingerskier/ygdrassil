@@ -17,5 +17,7 @@ export default function Delta() {
         <p>Persisted Count: {query?.delta}</p>
 
         <button onClick={restart}>Restart</button>
+
+        <span>This state remembers `delta` count via query-param</span>
     </div>
 }
