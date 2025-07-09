@@ -1,8 +1,14 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   text-align: center;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 a.badge {
@@ -19,14 +25,14 @@ a.badge {
   margin: 1rem;
   border-radius: 0.5rem;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-  width: 100%;
-  height: 50%;
 }
 
 .banner {
+  position: relative;
+  width: 100%;
   background-color: #333;
-  padding: 1rem;
-  margin-bottom: 1rem;
+  padding: 0;
+  margin: 0 0 1rem 0;
   border-radius: 0.5rem;
 }
 

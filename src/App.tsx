@@ -12,11 +12,11 @@ export default function App() {
   return <>
     <div className='banner'>
       <h1>Ygdrassil</h1>
-      <p>A tiny React state machine library.</p>
+      <p>A basic, declarative React state machine library.</p>
       <p>
-        <a href='https://github.com/ygdrassil/ygdrassil'>GitHub</a>
+        <a href='https://github.com/fingerskier/ygdrassil' target='_blank'>GitHub</a>
         {' | '}
-        <a href='https://www.npmjs.com/package/ygdrassil'>NPM</a>
+        <a href='https://www.npmjs.com/package/ygdrassil' target='_blank'>NPM</a>
       </p>
     </div>
     <a href='/'>Restart</a>
