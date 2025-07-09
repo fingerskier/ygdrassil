@@ -20,6 +20,7 @@ shared with a specific step active.
 - `query` and `setQuery` helpers for persisting extra values in the hash.
 - URL hash integration so state can be persisted across refreshes.
 - Providing an `initial` state automatically updates the URL hash on load.
+- Pass `className` to `StateMachine` to wrap its children in a div with those classes when active.
 
 ## Installation
 
@@ -34,7 +35,7 @@ import { StateMachine, State, StateButton } from 'ygdrassil'
 
 function Example() {
   return (
-    <StateMachine initial="one" name="demo">
+    <StateMachine initial="one" name="demo" className="wizard">
       <nav>
         <StateButton to="one">One</StateButton>
         <StateButton to="two">Two</StateButton>
@@ -56,6 +57,8 @@ function Example() {
   )
 }
 ```
+
+Passing `className` automatically wraps the machine's children in a `<div>` with those classes.
 
 Use the `machine` prop to link to a state in another machine on the page:
 

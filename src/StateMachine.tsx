@@ -87,13 +87,14 @@ export const State: React.FC<StateProps> = ({ name, onEnter, onExit, transition,
 interface StateMachineProps {
   initial?: string
   name?: string
+  className?: string
   children: ReactNode
 }
 
 /**
  * Top-level provider. Manages state registration and transitions.
  */
-export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, name }) => {
+export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, name, className }) => {
   const machineStateParam = `yg-${name ?? '#'}`
 
   const readParam = useCallback(() => {
@@ -285,7 +286,11 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
   /* ---------- Render children normally ---------- */
   return (
     <StateMachineContext.Provider value={ctxValue}>
-      {currentState ? children : null}
+      {currentState
+        ? className
+          ? <div className={className}>{children}</div>
+          : children
+        : null}
     </StateMachineContext.Provider>
   )
 }
