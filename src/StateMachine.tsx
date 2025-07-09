@@ -230,6 +230,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     [],
   )
 
+
   /* ---------- Push initial state to the URL on mount ---------- */
   useEffect(() => {
     if (!initial) return
@@ -244,6 +245,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
       window.history.replaceState(null, '', newHash)
     }
   }, [initial, readParam, machineStateParam])
+
 
   /* ---------- Watch for external hash changes ---------- */
   useEffect(() => {
@@ -260,6 +262,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     window.addEventListener('hashchange', handler)
     return () => window.removeEventListener('hashchange', handler)
   }, [transitionToState, readParam, readQuery])
+
 
   /* ---------- Context value ---------- */
   const ctxValue = useMemo(
@@ -283,6 +286,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     [currentState, gotoState, close, query, setQuery, registerState, unregisterState, machineStateParam, version],
   )
 
+
   /* ---------- Render children normally ---------- */
   return (
     <StateMachineContext.Provider value={ctxValue}>
@@ -295,11 +299,13 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
   )
 }
 
+
 interface StateButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   to: string
   data?: Record<string, string | number | null | undefined>
   replace?: boolean
 }
+
 
 export function StateButton({ data, replace, to, children, className, ...rest }: StateButtonProps) {
   const { gotoState, is, setQuery } = useStateMachine()
@@ -318,11 +324,13 @@ export function StateButton({ data, replace, to, children, className, ...rest }:
   )
 }
 
+
 interface ExternalButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   to: string
   machine: string
   data?: Record<string, string | number>
 }
+
 
 export function ExternalButton({ data, machine, to, children, className, ...rest }: ExternalButtonProps) {
   return <button {...rest} className={className} onClick={() => {
