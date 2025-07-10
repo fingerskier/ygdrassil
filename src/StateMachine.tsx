@@ -307,7 +307,7 @@ interface StateButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 
-export function StateButton({ data, replace, to, children, className, ...rest }: StateButtonProps) {
+export function StateButton({ data, replace, to, children, className, onClick, ...rest }: StateButtonProps) {
   const { gotoState, is, setQuery } = useStateMachine()
 
   const classNames = [className, is(to) ? 'active' : undefined]
@@ -315,7 +315,8 @@ export function StateButton({ data, replace, to, children, className, ...rest }:
     .join(' ')
   
   return (
-    <button {...rest} className={classNames} onClick={() => {
+    <button {...rest} className={classNames} onClick={e => {
+      onClick?.(e)
       gotoState(to)
       if (data) setQuery(data, replace)
     }}>
@@ -332,8 +333,9 @@ interface ExternalButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 
-export function ExternalButton({ data, machine, to, children, className, ...rest }: ExternalButtonProps) {
-  return <button {...rest} className={className} onClick={() => {
+export function ExternalButton({ data, machine, to, children, className, onClick, ...rest }: ExternalButtonProps) {
+  return <button {...rest} className={className} onClick={e => {
+    onClick?.(e)
     // Parse existing query params
     const currentHash = window.location.hash.startsWith('#?')
       ? window.location.hash.slice(2)
