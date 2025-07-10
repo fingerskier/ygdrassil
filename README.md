@@ -36,15 +36,17 @@ The active state and context variables are synced the URL hash/query so app stat
   - `param` string with is used to identify this state-machine in the URL hash
     - if the state-machine is named `demo` the URL will contain `yg-demo=one`
     - the value of that param is the name of the active state
-- `StateButton` convenience component for state navigation
-  - prop `to` for the name of the state to navigate to
-  - prop `className` adds those classes to the button
-    - if a StateButton's `to` matches the current state it will have an `active` class
-  - children are rendered if given, otherwise the button will render the `to` string in the button
-- `StateLink` is just like `StateButton` but renders an `<a>` tag instead of a `<button>`
-- `ExternalButton` is like `StateButton` but can be used outside of a `StateMachine` context.
-  - you must give it the `machine` prop with the name of the target state-machine
-- `ExternalLink` is like `ExternalButton` but renders an `<a>` tag instead of a `<button>`
+  - `StateButton` convenience component for state navigation
+    - prop `to` for the name of the state to navigate to
+    - prop `className` adds those classes to the button
+      - if a StateButton's `to` matches the current state it will have an `active` class
+    - optional `onClick` runs before the state change
+    - children are rendered if given, otherwise the button will render the `to` string in the button
+  - `StateLink` is just like `StateButton` but renders an `<a>` tag instead of a `<button>`
+  - `ExternalButton` is like `StateButton` but can be used outside of a `StateMachine` context.
+    - you must give it the `machine` prop with the name of the target state-machine
+    - optional `onClick` runs before the state change
+  - `ExternalLink` is like `ExternalButton` but renders an `<a>` tag instead of a `<button>`
 
 
 ## Demo / Example / Test
