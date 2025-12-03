@@ -12,3 +12,14 @@ export const M2 = {
   gamma: [ 'beta', 'delta' ],
   delta: [ 'gamma', 'alpha' ],
 }
+
+export const DOCS = {
+  ST: [ 'overview', 'statemachine', 'state', 'navigation', 'hook', 'examples', 'api' ],
+  overview: [ 'statemachine', 'examples' ],
+  statemachine: [ 'overview', 'state', 'navigation' ],
+  state: [ 'statemachine', 'navigation', 'hook' ],
+  navigation: [ 'state', 'hook', 'examples' ],
+  hook: [ 'state', 'navigation', 'api' ],
+  examples: [ 'overview', 'navigation', 'api' ],
+  api: [ 'hook', 'examples', 'overview' ],
+}

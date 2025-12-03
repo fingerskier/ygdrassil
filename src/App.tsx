@@ -4,6 +4,7 @@ import Two from '@/com/First/Two'
 import Three from '@/com/First/Three'
 import Controls1 from '@/com/First/Controls'
 import SecondMachine from '@/com/Second'
+import DocsMachine from '@/com/Docs'
 import {M1} from '@/com/constants'
 
 import './App.css'
@@ -27,6 +28,7 @@ export default function App() {
     </div>
     <a href='/'>Restart</a>
 
+    <ExternalButton className='badge' to='overview' machine='docs'>Documentation</ExternalButton>
     <ExternalButton className='badge' to='one' machine='app'>Start machine #1</ExternalButton>
 
     <StateMachine name='app' className='state machine one'>
@@ -52,5 +54,9 @@ export default function App() {
 
     <StateMachine name='aux' initial='alpha'>
         <SecondMachine />
+    </StateMachine>
+
+    <StateMachine name='docs' initial='overview'>
+        <DocsMachine />
     </StateMachine>
   </>}
