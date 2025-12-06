@@ -26,7 +26,11 @@ interface StateRegistrationCtx {
 
 interface Ctx extends StateRegistrationCtx {
   currentState: string | undefined
-  gotoState: (name: string) => void
+  gotoState: (
+    name: string,
+    data?: Record<string, string | number | null | undefined>,
+    replace?: boolean,
+  ) => void
   close: () => void
   is: (name: string) => boolean
   availableTransitions: string[]
@@ -164,23 +168,43 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
 
   // Public gotoState - updates URL, which triggers state change
   const gotoState = useCallback(
-    (next: string) => {
+    (
+      next: string,
+      data?: Record<string, string | number | null | undefined>,
+      replace = false,
+    ) => {
       const current = currentRef.current
-      if (current === next) return // no-op
-      
+      if (current === next && !data) return // no-op if same state and no data changes
+
       const allowed = current ? statesRef.current[current]?.transition : undefined
       if (allowed && !allowed.includes(next)) {
         console.warn(`Transition from "${current}" to "${next}" not allowed.`)
         return
       }
 
-      // Update URL hash parameter
+      // Build new URL params atomically
       const currentHash = window.location.hash.startsWith('#?')
         ? window.location.hash.slice(2)
         : ''
       const params = new URLSearchParams(currentHash)
+
+      // Handle data with replace semantics
+      if (data) {
+        if (replace) {
+          // Remove all non-yg- params first
+          for (const key of Array.from(params.keys())) {
+            if (!key.startsWith('yg-')) params.delete(key)
+          }
+        }
+        for (const [k, v] of Object.entries(data)) {
+          if (v == null) params.delete(k)
+          else params.set(k, String(v))
+        }
+      }
+
+      // Set the state param
       params.set(machineStateParam, next)
-      
+
       const newHash = `#?${params.toString()}`
       window.history.pushState(null, '', newHash)
       window.dispatchEvent(new HashChangeEvent('hashchange'))
@@ -308,17 +332,16 @@ interface StateButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 
 export function StateButton({ data, replace, to, children, className, onClick, ...rest }: StateButtonProps) {
-  const { gotoState, is, setQuery } = useStateMachine()
+  const { gotoState, is } = useStateMachine()
 
   const classNames = [className, is(to) ? 'active' : undefined]
     .filter(Boolean)
     .join(' ')
-  
+
   return (
     <button {...rest} className={classNames} onClick={e => {
       onClick?.(e)
-      gotoState(to)
-      if (data) setQuery(data, replace)
+      gotoState(to, data, replace)
     }}>
       {children ?? to}
     </button>
