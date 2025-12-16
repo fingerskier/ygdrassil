@@ -1,3 +1,4 @@
+import {useState, useCallback} from 'react'
 import {StateMachine, State, ExternalButton} from '@/StateMachine'
 import One from '@/com/First/One'
 import Two from '@/com/First/Two'
@@ -12,6 +13,16 @@ import logo from '@/assets/logo.png'
 
 
 export default function App() {
+  // Navigation history for demonstrating global onEnter/onExit handlers
+  const [navHistory, setNavHistory] = useState<{type: 'enter' | 'exit', state: string, machine: string, time: string}[]>([])
+
+  const logNav = useCallback((type: 'enter' | 'exit', machine: string) => (state: string) => {
+    setNavHistory(prev => [
+      ...prev.slice(-9), // Keep last 10 entries
+      { type, state, machine, time: new Date().toLocaleTimeString() }
+    ])
+  }, [])
+
   return <>
     <div className='banner'>
       <h1>
@@ -31,7 +42,12 @@ export default function App() {
     <ExternalButton className='badge' to='overview' machine='docs'>Documentation</ExternalButton>
     <ExternalButton className='badge' to='one' machine='app'>Start machine #1</ExternalButton>
 
-    <StateMachine name='app' className='state machine one'>
+    <StateMachine
+      name='app'
+      className='state machine one'
+      onEnter={logNav('enter', 'app')}
+      onExit={logNav('exit', 'app')}
+    >
       <h1>First State-Machine</h1>
         <ExternalButton className='badge'
           to='alpha' machine='aux'
@@ -52,11 +68,33 @@ export default function App() {
         </State>
     </StateMachine>
 
-    <StateMachine name='aux' initial='alpha'>
+    <StateMachine
+      name='aux'
+      initial='alpha'
+      onEnter={logNav('enter', 'aux')}
+      onExit={logNav('exit', 'aux')}
+    >
         <SecondMachine />
     </StateMachine>
 
     <StateMachine name='docs' initial='overview'>
         <DocsMachine />
     </StateMachine>
+
+    {/* Navigation History - demonstrates global onEnter/onExit handlers */}
+    {navHistory.length > 0 && (
+      <div className='nav-history'>
+        <h3>Navigation History (Global Handlers)</h3>
+        <ul>
+          {navHistory.map((entry, i) => (
+            <li key={i} className={entry.type}>
+              <span className='time'>{entry.time}</span>
+              <span className='type'>{entry.type === 'enter' ? 'ENTER' : 'EXIT'}</span>
+              <span className='machine'>{entry.machine}</span>
+              <span className='state'>{entry.state}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
   </>}

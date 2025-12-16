@@ -37,4 +37,76 @@ a.badge {
 }
 
 .banner a {
-  color: #61dafb;}
+  color: #61dafb;
+}
+
+/* Navigation History - Global Handlers Demo */
+.nav-history {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  background: #1a1a2e;
+  border: 1px solid #4a4a6a;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  max-width: 320px;
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.nav-history h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.85rem;
+  color: #8a8aaa;
+  border-bottom: 1px solid #4a4a6a;
+  padding-bottom: 0.5rem;
+}
+
+.nav-history ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-history li {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.25rem 0;
+  font-size: 0.75rem;
+  font-family: monospace;
+  border-bottom: 1px solid #2a2a4a;
+}
+
+.nav-history li:last-child {
+  border-bottom: none;
+}
+
+.nav-history li.enter {
+  color: #4ade80;
+}
+
+.nav-history li.exit {
+  color: #f87171;
+}
+
+.nav-history .time {
+  color: #6a6a8a;
+  min-width: 70px;
+}
+
+.nav-history .type {
+  font-weight: bold;
+  min-width: 45px;
+}
+
+.nav-history .machine {
+  color: #60a5fa;
+  min-width: 35px;
+}
+
+.nav-history .state {
+  color: inherit;
+}

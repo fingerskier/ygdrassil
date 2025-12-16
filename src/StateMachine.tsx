@@ -93,12 +93,16 @@ interface StateMachineProps {
   name?: string
   className?: string
   children: ReactNode
+  /** Global callback fired when entering any state */
+  onEnter?: (state: string) => void
+  /** Global callback fired when exiting any state */
+  onExit?: (state: string) => void
 }
 
 /**
  * Top-level provider. Manages state registration and transitions.
  */
-export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, name, className }) => {
+export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, name, className, onEnter: globalOnEnter, onExit: globalOnExit }) => {
   const machineStateParam = `yg-${name ?? '#'}`
 
   const readParam = useCallback(() => {
@@ -158,12 +162,16 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
           console.warn(`Transition from "${prev}" to "${next}" not allowed.`)
           return prev
         }
+        // Call state-level handlers
         if (prev) statesRef.current[prev]?.onExit?.()
         statesRef.current[next]?.onEnter?.()
+        // Call global handlers
+        if (prev) globalOnExit?.(prev)
+        globalOnEnter?.(next)
         return next
       })
     },
-    [],
+    [globalOnEnter, globalOnExit],
   )
 
   // Public gotoState - updates URL, which triggers state change
@@ -269,6 +277,16 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
       window.history.replaceState(null, '', newHash)
     }
   }, [initial, readParam, machineStateParam])
+
+  /* ---------- Call global onEnter on initial mount ---------- */
+  const initialOnEnterCalledRef = useRef(false)
+  useEffect(() => {
+    if (initialOnEnterCalledRef.current) return
+    if (currentState) {
+      initialOnEnterCalledRef.current = true
+      globalOnEnter?.(currentState)
+    }
+  }, [currentState, globalOnEnter])
 
 
   /* ---------- Watch for external hash changes ---------- */
