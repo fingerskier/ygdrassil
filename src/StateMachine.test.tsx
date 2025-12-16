@@ -1278,6 +1278,163 @@ describe('Multiple StateMachines', () => {
   })
 })
 
+describe('Global onEnter and onExit handlers', () => {
+  beforeEach(() => {
+    window.location.hash = ''
+  })
+
+  it('calls global onEnter when entering a state', async () => {
+    const globalOnEnter = vi.fn()
+
+    const TestComponent = () => {
+      const { gotoState } = useStateMachine()
+      return <button onClick={() => gotoState('page2')}>Go to Page 2</button>
+    }
+
+    render(
+      <StateMachine initial="page1" name="test" onEnter={globalOnEnter}>
+        <State name="page1"><div>Page 1</div></State>
+        <State name="page2"><div>Page 2</div></State>
+        <TestComponent />
+      </StateMachine>
+    )
+
+    // Should be called on initial state
+    expect(globalOnEnter).toHaveBeenCalledWith('page1')
+    globalOnEnter.mockClear()
+
+    const button = screen.getByText('Go to Page 2')
+    await act(async () => {
+      fireEvent.click(button)
+    })
+
+    expect(globalOnEnter).toHaveBeenCalledWith('page2')
+    expect(globalOnEnter).toHaveBeenCalledTimes(1)
+  })
+
+  it('calls global onExit when leaving a state', async () => {
+    const globalOnExit = vi.fn()
+
+    const TestComponent = () => {
+      const { gotoState } = useStateMachine()
+      return <button onClick={() => gotoState('page2')}>Go to Page 2</button>
+    }
+
+    render(
+      <StateMachine initial="page1" name="test" onExit={globalOnExit}>
+        <State name="page1"><div>Page 1</div></State>
+        <State name="page2"><div>Page 2</div></State>
+        <TestComponent />
+      </StateMachine>
+    )
+
+    // Should not be called on initial state (no previous state)
+    expect(globalOnExit).not.toHaveBeenCalled()
+
+    const button = screen.getByText('Go to Page 2')
+    await act(async () => {
+      fireEvent.click(button)
+    })
+
+    expect(globalOnExit).toHaveBeenCalledWith('page1')
+    expect(globalOnExit).toHaveBeenCalledTimes(1)
+  })
+
+  it('calls both state-level and global handlers in correct order', async () => {
+    const callOrder: string[] = []
+    const stateOnExit = vi.fn(() => callOrder.push('state-onExit'))
+    const stateOnEnter = vi.fn(() => callOrder.push('state-onEnter'))
+    const globalOnExit = vi.fn(() => callOrder.push('global-onExit'))
+    const globalOnEnter = vi.fn(() => callOrder.push('global-onEnter'))
+
+    const TestComponent = () => {
+      const { gotoState } = useStateMachine()
+      return <button onClick={() => gotoState('page2')}>Go to Page 2</button>
+    }
+
+    render(
+      <StateMachine initial="page1" name="test" onEnter={globalOnEnter} onExit={globalOnExit}>
+        <State name="page1" onExit={stateOnExit}><div>Page 1</div></State>
+        <State name="page2" onEnter={stateOnEnter}><div>Page 2</div></State>
+        <TestComponent />
+      </StateMachine>
+    )
+
+    // Clear initial onEnter call
+    callOrder.length = 0
+
+    const button = screen.getByText('Go to Page 2')
+    await act(async () => {
+      fireEvent.click(button)
+    })
+
+    // State-level handlers should be called before global handlers
+    expect(callOrder).toEqual(['state-onExit', 'state-onEnter', 'global-onExit', 'global-onEnter'])
+  })
+
+  it('does not call global onExit when there is no previous state', async () => {
+    const globalOnExit = vi.fn()
+    const globalOnEnter = vi.fn()
+
+    render(
+      <StateMachine initial="page1" name="test" onEnter={globalOnEnter} onExit={globalOnExit}>
+        <State name="page1"><div>Page 1</div></State>
+      </StateMachine>
+    )
+
+    // onEnter should be called for initial state
+    expect(globalOnEnter).toHaveBeenCalledWith('page1')
+    // onExit should NOT be called (no previous state to exit)
+    expect(globalOnExit).not.toHaveBeenCalled()
+  })
+
+  it('receives correct state names in handlers', async () => {
+    const enteredStates: string[] = []
+    const exitedStates: string[] = []
+
+    const TestComponent = () => {
+      const { gotoState } = useStateMachine()
+      return (
+        <>
+          <button onClick={() => gotoState('page2')}>Go to Page 2</button>
+          <button onClick={() => gotoState('page3')}>Go to Page 3</button>
+        </>
+      )
+    }
+
+    render(
+      <StateMachine
+        initial="page1"
+        name="test"
+        onEnter={(s) => enteredStates.push(s)}
+        onExit={(s) => exitedStates.push(s)}
+      >
+        <State name="page1"><div>Page 1</div></State>
+        <State name="page2"><div>Page 2</div></State>
+        <State name="page3"><div>Page 3</div></State>
+        <TestComponent />
+      </StateMachine>
+    )
+
+    expect(enteredStates).toEqual(['page1'])
+    expect(exitedStates).toEqual([])
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Go to Page 2'))
+    })
+
+    expect(enteredStates).toEqual(['page1', 'page2'])
+    expect(exitedStates).toEqual(['page1'])
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Go to Page 3'))
+    })
+
+    expect(enteredStates).toEqual(['page1', 'page2', 'page3'])
+    expect(exitedStates).toEqual(['page1', 'page2'])
+  })
+})
+
 describe('Edge cases', () => {
   beforeEach(() => {
     window.location.hash = ''
