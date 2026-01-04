@@ -4,6 +4,8 @@
 Each state is declared in JSX and only the active state's children are rendered.
 The active state and context variables are synced the URL hash/query so app state can be bookmarked.
 
+**Also available:** A [vanilla JavaScript version](./vanilla) with zero dependencies for use in any web project without React.
+
 
 ## Features
 
@@ -60,4 +62,37 @@ git clone https://github.com/fingerskier/ygdrassil.git
 cd ygdrassil
 npm install
 npm run dev
+```
+
+For the vanilla JavaScript version, see the [vanilla/README.md](./vanilla/README.md) for usage instructions and examples.
+
+## Installation
+
+### React Version
+
+```bash
+npm install ygdrassil
+```
+
+```jsx
+import { StateMachine, State, useStateMachine } from 'ygdrassil'
+```
+
+### Vanilla JavaScript Version
+
+```bash
+npm install ygdrassil
+```
+
+```javascript
+import { StateMachine } from 'ygdrassil/vanilla'
+```
+
+Or use directly in browser:
+
+```html
+<script type="module">
+  import { StateMachine } from './node_modules/ygdrassil/vanilla/StateMachine.js'
+  // ... or from a CDN
+</script>
 ```

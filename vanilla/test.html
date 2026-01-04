@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vanilla StateMachine Test</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test {
+      margin: 10px 0;
+      padding: 10px;
+      background: white;
+      border-left: 4px solid #ccc;
+    }
+    .test.pass {
+      border-color: #4caf50;
+    }
+    .test.fail {
+      border-color: #f44336;
+    }
+    h1 {
+      color: #333;
+    }
+    #results {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Vanilla StateMachine Tests</h1>
+  <div id="results"></div>
+
+  <script type="module">
+    import { StateMachine, createStateButton, createStateLink } from './StateMachine.js'
+
+    const results = document.getElementById('results')
+    let passCount = 0
+    let failCount = 0
+
+    function test(name, fn) {
+      const div = document.createElement('div')
+      div.className = 'test'
+
+      try {
+        fn()
+        div.classList.add('pass')
+        div.innerHTML = `✓ ${name}`
+        passCount++
+      } catch (error) {
+        div.classList.add('fail')
+        div.innerHTML = `✗ ${name}<br><small>${error.message}</small>`
+        failCount++
+      }
+
+      results.appendChild(div)
+    }
+
+    function assert(condition, message) {
+      if (!condition) throw new Error(message || 'Assertion failed')
+    }
+
+    function assertEquals(actual, expected, message) {
+      if (actual !== expected) {
+        throw new Error(message || `Expected ${expected}, got ${actual}`)
+      }
+    }
+
+    // Run tests
+    console.log('Running tests...')
+
+    test('StateMachine constructor creates instance', () => {
+      const machine = new StateMachine({ name: 'test1' })
+      assert(machine instanceof StateMachine)
+      assertEquals(machine.name, 'test1')
+      assertEquals(machine.param, 'yg-test1')
+      machine.destroy()
+    })
+
+    test('StateMachine initializes with initial state', () => {
+      const machine = new StateMachine({
+        name: 'test2',
+        initial: 'home',
+        states: {
+          home: {}
+        }
+      })
+      assertEquals(machine.currentState, 'home')
+      machine.destroy()
+    })
+
+    test('registerState adds new state', () => {
+      const machine = new StateMachine({ name: 'test3' })
+      machine.registerState('state1', {
+        onEnter: () => console.log('enter')
+      })
+      assert(machine.states.state1)
+      machine.destroy()
+    })
+
+    test('unregisterState removes state', () => {
+      const machine = new StateMachine({ name: 'test4' })
+      machine.registerState('state1', {})
+      assert(machine.states.state1)
+      machine.unregisterState('state1')
+      assert(!machine.states.state1)
+      machine.destroy()
+    })
+
+    test('is() returns true for current state', () => {
+      const machine = new StateMachine({
+        name: 'test5',
+        initial: 'home',
+        states: { home: {} }
+      })
+      assert(machine.is('home'))
+      assert(!machine.is('about'))
+      machine.destroy()
+    })
+
+    test('getQuery returns query parameters', () => {
+      // Set hash first
+      window.location.hash = '#?test=value&num=42'
+      const machine = new StateMachine({ name: 'test6' })
+      const query = machine.getQuery()
+      assertEquals(query.test, 'value')
+      assertEquals(query.num, 42) // Should be auto-converted to number
+      machine.destroy()
+      window.location.hash = ''
+    })
+
+    test('subscribe notifies listeners', (done) => {
+      const machine = new StateMachine({
+        name: 'test7',
+        states: {
+          state1: {},
+          state2: {}
+        }
+      })
+
+      const unsubscribe = machine.subscribe((state) => {
+        assertEquals(state.currentState, 'state1')
+        unsubscribe()
+        machine.destroy()
+      })
+
+      machine.gotoState('state1')
+      setTimeout(() => {}, 100) // Give it time to process
+    })
+
+    test('onEnter callback fires', () => {
+      let entered = false
+      const machine = new StateMachine({
+        name: 'test8',
+        states: {
+          state1: {
+            onEnter: () => { entered = true }
+          }
+        }
+      })
+      machine.gotoState('state1')
+      setTimeout(() => {
+        assert(entered, 'onEnter should have been called')
+        machine.destroy()
+      }, 100)
+    })
+
+    test('global onEnter fires', () => {
+      let globalEntered = false
+      const machine = new StateMachine({
+        name: 'test9',
+        states: { state1: {} },
+        onEnter: () => { globalEntered = true }
+      })
+      machine.gotoState('state1')
+      setTimeout(() => {
+        assert(globalEntered, 'Global onEnter should have been called')
+        machine.destroy()
+      }, 100)
+    })
+
+    test('transition control prevents invalid transitions', () => {
+      const machine = new StateMachine({
+        name: 'test10',
+        initial: 'state1',
+        states: {
+          state1: {
+            transition: ['state2'] // Can only go to state2
+          },
+          state2: {},
+          state3: {}
+        }
+      })
+
+      // This should be blocked
+      machine.gotoState('state3')
+      setTimeout(() => {
+        assertEquals(machine.currentState, 'state1', 'Should stay in state1')
+
+        // This should work
+        machine.gotoState('state2')
+        setTimeout(() => {
+          assertEquals(machine.currentState, 'state2', 'Should move to state2')
+          machine.destroy()
+        }, 100)
+      }, 100)
+    })
+
+    test('createStateButton creates button element', () => {
+      const machine = new StateMachine({
+        name: 'test11',
+        states: { state1: {} }
+      })
+      const button = createStateButton(machine, 'state1', { text: 'Test' })
+      assert(button instanceof HTMLButtonElement)
+      assertEquals(button.textContent, 'Test')
+      machine.destroy()
+    })
+
+    test('createStateLink creates anchor element', () => {
+      const machine = new StateMachine({
+        name: 'test12',
+        states: { state1: {} }
+      })
+      const link = createStateLink(machine, 'state1', { text: 'Test' })
+      assert(link instanceof HTMLAnchorElement)
+      assertEquals(link.textContent, 'Test')
+      machine.destroy()
+    })
+
+    // Display summary
+    setTimeout(() => {
+      const summary = document.createElement('div')
+      summary.style.marginTop = '20px'
+      summary.style.padding = '20px'
+      summary.style.background = passCount > failCount ? '#e8f5e9' : '#ffebee'
+      summary.style.borderRadius = '4px'
+      summary.innerHTML = `
+        <h2>Test Summary</h2>
+        <p><strong>Passed:</strong> ${passCount}</p>
+        <p><strong>Failed:</strong> ${failCount}</p>
+        <p><strong>Total:</strong> ${passCount + failCount}</p>
+      `
+      results.appendChild(summary)
+
+      console.log(`Tests complete: ${passCount} passed, ${failCount} failed`)
+    }, 1000)
+  </script>
+</body>
+</html>

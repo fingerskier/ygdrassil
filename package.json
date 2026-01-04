@@ -5,10 +5,12 @@
   "main": "./src/StateMachine.tsx",
   "types": "./src/StateMachine.tsx",
   "exports": {
-    ".": "./src/StateMachine.tsx"
+    ".": "./src/StateMachine.tsx",
+    "./vanilla": "./vanilla/StateMachine.js"
   },
   "files": [
-    "src/StateMachine.tsx"
+    "src/StateMachine.tsx",
+    "vanilla/"
   ],
   "scripts": {
     "deploy": "npm run build&&gh-pages -d dist",
