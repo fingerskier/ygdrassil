@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ygdrassil Vanilla JavaScript Example</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      font-size: 1.1em;
+      opacity: 0.9;
+    }
+
+    main {
+      padding: 40px;
+    }
+
+    section {
+      margin-bottom: 40px;
+      padding-bottom: 30px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    section:last-child {
+      border-bottom: none;
+    }
+
+    h2 {
+      color: #667eea;
+      margin-bottom: 20px;
+      font-size: 1.8em;
+    }
+
+    h3 {
+      color: #764ba2;
+      margin-bottom: 15px;
+      font-size: 1.4em;
+    }
+
+    .nav-links {
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .nav-links a {
+      display: inline-block;
+      margin: 0 10px;
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      transition: background 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Navigation Styles */
+    state-nav button,
+    state-nav a {
+      display: inline-block;
+      padding: 12px 24px;
+      margin: 5px;
+      border: 2px solid #667eea;
+      background: white;
+      color: #667eea;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    state-nav button:hover,
+    state-nav a:hover {
+      background: #667eea;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    state-nav button.active,
+    state-nav a.active {
+      background: #667eea;
+      color: white;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    /* State Content Styles */
+    state-def {
+      display: block;
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    state-def h2 {
+      margin-top: 0;
+    }
+
+    state-def p {
+      margin-bottom: 15px;
+      font-size: 1.05em;
+    }
+
+    state-def ul {
+      margin-left: 20px;
+      margin-bottom: 15px;
+    }
+
+    state-def li {
+      margin-bottom: 8px;
+    }
+
+    .info-box {
+      background: #e3f2fd;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      border-left: 4px solid #2196f3;
+    }
+
+    .info-box h4 {
+      color: #1976d2;
+      margin-bottom: 10px;
+    }
+
+    .code-block {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 20px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    footer {
+      background: #f8f9fa;
+      padding: 20px;
+      text-align: center;
+      color: #666;
+    }
+
+    footer a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      header {
+        padding: 30px 20px;
+      }
+
+      header h1 {
+        font-size: 2em;
+      }
+
+      main {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🌳 Ygdrassil Vanilla JavaScript</h1>
+      <p>State Machine Library - Zero Dependencies</p>
+      <div class="nav-links">
+        <a href="/">React Demo</a>
+        <a href="https://github.com/fingerskier/ygdrassil" target="_blank">GitHub</a>
+      </div>
+    </header>
+
+    <main>
+      <!-- Introduction Section -->
+      <section>
+        <h2>Welcome to Vanilla JS Example</h2>
+        <div class="info-box">
+          <h4>What is this?</h4>
+          <p>
+            This is a demonstration of Ygdrassil state machines using pure vanilla JavaScript
+            and Web Components. No React, no build tools, no dependencies required!
+          </p>
+          <p>
+            Notice how the URL updates as you navigate between states. You can bookmark any state
+            or share the URL with others to take them directly to a specific state.
+          </p>
+        </div>
+      </section>
+
+      <!-- Main Demo -->
+      <section>
+        <h2>Interactive Demo</h2>
+        <p>Click the buttons below to navigate between states:</p>
+
+        <state-machine name="demo" initial="home">
+          <!-- Navigation -->
+          <div style="margin: 20px 0;">
+            <state-nav to="home">Home</state-nav>
+            <state-nav to="about">About</state-nav>
+            <state-nav to="features">Features</state-nav>
+            <state-nav to="example">Example Code</state-nav>
+          </div>
+
+          <!-- States -->
+          <state-def name="home">
+            <h2>🏠 Home</h2>
+            <p>
+              Welcome to the Ygdrassil vanilla JavaScript example! This demonstrates
+              how to create state machines using Web Components.
+            </p>
+            <p>
+              The entire state management is handled through declarative HTML elements.
+              No complex JavaScript required!
+            </p>
+            <div class="info-box">
+              <h4>Quick Tips:</h4>
+              <ul>
+                <li>Click the navigation buttons to explore different states</li>
+                <li>Watch the URL change as you navigate</li>
+                <li>Try using browser back/forward buttons</li>
+                <li>Bookmark a state and return to it later</li>
+              </ul>
+            </div>
+          </state-def>
+
+          <state-def name="about">
+            <h2>📖 About Ygdrassil</h2>
+            <p>
+              Ygdrassil is a lightweight state machine library that synchronizes your
+              application state with the URL hash and query parameters.
+            </p>
+            <p>Key benefits:</p>
+            <ul>
+              <li><strong>Bookmarkable States:</strong> Every state has a unique URL</li>
+              <li><strong>Zero Dependencies:</strong> Pure vanilla JavaScript</li>
+              <li><strong>Web Components:</strong> Use custom HTML elements</li>
+              <li><strong>Type Safe:</strong> Works great with TypeScript</li>
+              <li><strong>Small Bundle:</strong> Minimal footprint</li>
+            </ul>
+          </state-def>
+
+          <state-def name="features">
+            <h2>✨ Features</h2>
+            <p>Ygdrassil Vanilla provides:</p>
+            <ul>
+              <li><strong>Declarative HTML:</strong> Define states using custom elements</li>
+              <li><strong>State Transitions:</strong> Control which states can navigate to others</li>
+              <li><strong>Lifecycle Hooks:</strong> onEnter and onExit callbacks</li>
+              <li><strong>Query Parameters:</strong> Pass data between states</li>
+              <li><strong>Multiple Machines:</strong> Run several state machines simultaneously</li>
+              <li><strong>Event System:</strong> Listen to state changes with custom events</li>
+              <li><strong>Progressive Enhancement:</strong> Works without JavaScript enabled</li>
+            </ul>
+            <div class="info-box">
+              <h4>Browser Support:</h4>
+              <p>Works in all modern browsers that support ES6 modules and Custom Elements.</p>
+            </div>
+          </state-def>
+
+          <state-def name="example">
+            <h2>💻 Example Code</h2>
+            <p>Here's the HTML used to create this very demo:</p>
+            <div class="code-block">
+&lt;state-machine name="demo" initial="home"&gt;
+  &lt;!-- Navigation --&gt;
+  &lt;state-nav to="home"&gt;Home&lt;/state-nav&gt;
+  &lt;state-nav to="about"&gt;About&lt;/state-nav&gt;
+  &lt;state-nav to="features"&gt;Features&lt;/state-nav&gt;
+
+  &lt;!-- States --&gt;
+  &lt;state-def name="home"&gt;
+    &lt;h2&gt;Home&lt;/h2&gt;
+    &lt;p&gt;Welcome to Ygdrassil!&lt;/p&gt;
+  &lt;/state-def&gt;
+
+  &lt;state-def name="about"&gt;
+    &lt;h2&gt;About&lt;/h2&gt;
+    &lt;p&gt;A state machine library...&lt;/p&gt;
+  &lt;/state-def&gt;
+&lt;/state-machine&gt;
+
+&lt;script type="module" src="./StateMachine.elements.js"&gt;&lt;/script&gt;
+            </div>
+            <p style="margin-top: 20px;">
+              That's it! Just include the script and use the custom elements.
+            </p>
+          </state-def>
+        </state-machine>
+      </section>
+
+      <!-- Getting Started -->
+      <section>
+        <h2>🚀 Getting Started</h2>
+        <h3>Installation</h3>
+        <div class="code-block">
+npm install ygdrassil
+        </div>
+
+        <h3 style="margin-top: 20px;">Usage</h3>
+        <div class="code-block">
+&lt;!-- Include the Web Components library --&gt;
+&lt;script type="module"&gt;
+  import 'ygdrassil/vanilla/elements'
+&lt;/script&gt;
+
+&lt;!-- Or use in browser --&gt;
+&lt;script type="module" src="./node_modules/ygdrassil/vanilla/StateMachine.elements.js"&gt;&lt;/script&gt;
+        </div>
+
+        <div class="info-box" style="margin-top: 20px;">
+          <h4>Learn More:</h4>
+          <p>
+            Check out the
+            <a href="https://github.com/fingerskier/ygdrassil" target="_blank">GitHub repository</a>
+            for complete documentation, advanced examples, and the programmatic API.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Built with Ygdrassil Vanilla JavaScript |
+        <a href="https://github.com/fingerskier/ygdrassil" target="_blank">GitHub</a> |
+        <a href="/">React Demo</a>
+      </p>
+    </footer>
+  </div>
+
+  <script type="module" src="./StateMachine.elements.js"></script>
+</body>
+</html>
