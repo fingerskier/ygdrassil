@@ -4,6 +4,8 @@
 Each state is declared in JSX and only the active state's children are rendered.
 The active state and context variables are synced the URL hash/query so app state can be bookmarked.
 
+**Also available:** A [vanilla JavaScript version](./vanilla) with zero dependencies for use in any web project without React. Includes both programmatic API and Web Components (custom HTML elements) for declarative usage.
+
 
 ## Features
 
@@ -60,4 +62,67 @@ git clone https://github.com/fingerskier/ygdrassil.git
 cd ygdrassil
 npm install
 npm run dev
+```
+
+For the vanilla JavaScript version, see the [vanilla/README.md](./vanilla/README.md) for usage instructions and examples.
+
+## Installation
+
+### React Version
+
+```bash
+npm install ygdrassil
+```
+
+```jsx
+import { StateMachine, State, useStateMachine } from 'ygdrassil'
+```
+
+### Vanilla JavaScript Version
+
+**Programmatic API:**
+```bash
+npm install ygdrassil
+```
+
+```javascript
+import { StateMachine } from 'ygdrassil/vanilla'
+
+const machine = new StateMachine({
+  name: 'app',
+  initial: 'home',
+  states: {
+    home: { onEnter: () => console.log('Home!') }
+  }
+})
+```
+
+**Web Components (Custom HTML Elements):**
+```javascript
+import 'ygdrassil/vanilla/elements'
+```
+
+```html
+<state-machine name="app" initial="home">
+  <state-nav to="home">Home</state-nav>
+  <state-nav to="about">About</state-nav>
+
+  <state-def name="home">
+    <h1>Home Page</h1>
+  </state-def>
+
+  <state-def name="about">
+    <h1>About Page</h1>
+  </state-def>
+</state-machine>
+```
+
+Or use directly in browser:
+
+```html
+<script type="module">
+  import { StateMachine } from './node_modules/ygdrassil/vanilla/StateMachine.js'
+  // or for Web Components:
+  import './node_modules/ygdrassil/vanilla/StateMachine.elements.js'
+</script>
 ```

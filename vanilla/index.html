@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ygdrassil Vanilla - State Machine Demo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Ygdrassil Vanilla JS</h1>
+      <p>A lightweight state machine using only standard web APIs</p>
+    </header>
+
+    <main>
+      <!-- Navigation Section -->
+      <section class="navigation">
+        <h2>Navigation</h2>
+        <div id="nav-buttons" class="button-group"></div>
+      </section>
+
+      <!-- State Content -->
+      <section class="content">
+        <div id="state-content">
+          <p class="placeholder">Select a state to begin</p>
+        </div>
+      </section>
+
+      <!-- Query Parameters Section -->
+      <section class="query-section">
+        <h3>Query Parameters</h3>
+        <div class="query-controls">
+          <input type="text" id="param-key" placeholder="Key" />
+          <input type="text" id="param-value" placeholder="Value" />
+          <button id="set-param">Set Parameter</button>
+        </div>
+        <div id="query-display" class="query-display"></div>
+      </section>
+
+      <!-- State Info -->
+      <section class="info">
+        <h3>State Information</h3>
+        <div id="state-info">
+          <p><strong>Current State:</strong> <span id="current-state">None</span></p>
+          <p><strong>Available Transitions:</strong> <span id="transitions">[]</span></p>
+        </div>
+      </section>
+
+      <!-- Multi-Machine Demo -->
+      <section class="multi-machine">
+        <h3>Multiple State Machines</h3>
+        <p>This demonstrates using multiple state machines simultaneously</p>
+        <div class="machines-container">
+          <div class="machine-box">
+            <h4>Machine A</h4>
+            <div id="machine-a-nav" class="button-group"></div>
+            <div id="machine-a-content" class="machine-content"></div>
+          </div>
+          <div class="machine-box">
+            <h4>Machine B</h4>
+            <div id="machine-b-nav" class="button-group"></div>
+            <div id="machine-b-content" class="machine-content"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>View source on <a href="https://github.com/fingerskier/ygdrassil" target="_blank">GitHub</a></p>
+    </footer>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
