@@ -35,6 +35,8 @@ export default function App() {
         <a href='https://github.com/fingerskier/ygdrassil' target='_blank'>GitHub</a>
         {' | '}
         <a href='https://www.npmjs.com/package/ygdrassil' target='_blank'>NPM</a>
+        {' | '}
+        <a href='/ygdrassil/vanilla_example.html' target='_blank'>Vanilla JS Example</a>
       </p>
     </div>
     <a href='/'>Restart</a>
