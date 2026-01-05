@@ -70,6 +70,194 @@ nav.appendChild(createStateButton(machine, 'home', { text: 'Home' }))
 nav.appendChild(createStateButton(machine, 'about', { text: 'About' }))
 ```
 
+## Web Components (Custom HTML Elements)
+
+For a more declarative approach, use the Web Components version! Define state machines directly in HTML with custom elements.
+
+### Quick Start with Web Components
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My App</title>
+</head>
+<body>
+  <state-machine name="app" initial="home">
+    <!-- Navigation -->
+    <state-nav to="home">Home</state-nav>
+    <state-nav to="about">About</state-nav>
+
+    <!-- States -->
+    <state-def name="home">
+      <h1>Welcome Home!</h1>
+      <p>This is the home page.</p>
+    </state-def>
+
+    <state-def name="about">
+      <h1>About Us</h1>
+      <p>Learn more about our application.</p>
+    </state-def>
+  </state-machine>
+
+  <script type="module" src="./StateMachine.elements.js"></script>
+</body>
+</html>
+```
+
+### Web Components API
+
+#### `<state-machine>`
+
+Defines a state machine container.
+
+**Attributes:**
+- `name` - Machine identifier (default: "default")
+- `initial` - Initial state to activate
+
+**Properties:**
+- `.machine` - Access the underlying StateMachine instance
+- `.currentState` - Get current state name
+
+**Methods:**
+- `.gotoState(name, data, replace)` - Navigate to a state
+- `.is(name)` - Check if in a state
+- `.close()` - Close the machine
+
+**Events:**
+- `state-enter` - Fired when entering a state (detail: `{ state }`)
+- `state-exit` - Fired when exiting a state (detail: `{ state }`)
+- `state-change` - Fired on any state change (detail: `{ currentState, states, query }`)
+
+#### `<state-def>`
+
+Defines a state within a state machine.
+
+**Attributes:**
+- `name` - State name (required)
+- `transition` - Comma-separated list of allowed next states
+- `onenter` - Name of global function to call on enter
+- `onexit` - Name of global function to call on exit
+
+**Events:**
+- `enter` - Fired when this state is entered
+- `exit` - Fired when this state is exited
+
+**Example:**
+```html
+<state-def name="wizard-step-1" transition="wizard-step-2" onenter="logStep1">
+  <h2>Step 1</h2>
+  <p>Complete this step to continue.</p>
+</state-def>
+```
+
+#### `<state-nav>`
+
+Creates a navigation button or link.
+
+**Attributes:**
+- `to` - Target state name (required)
+- `type` - "button" or "link" (default: "button")
+- `machine` - Target machine name (default: finds parent state-machine)
+- `data-*` - Query parameters to pass (e.g., `data-user-id="123"`)
+
+**Example:**
+```html
+<state-nav to="profile" data-user-id="42" data-tab="settings">
+  View Profile
+</state-nav>
+```
+
+#### `<state-query>`
+
+Displays current query parameters.
+
+**Attributes:**
+- `format` - "json" or "list" (default: "json")
+- `machine` - Target machine name (default: finds parent state-machine)
+
+**Example:**
+```html
+<state-query format="list"></state-query>
+```
+
+### Web Components Examples
+
+**Transition Control:**
+```html
+<state-machine name="wizard" initial="step1">
+  <state-nav to="step1">Step 1</state-nav>
+  <state-nav to="step2">Step 2</state-nav>
+  <state-nav to="step3">Step 3</state-nav>
+
+  <state-def name="step1" transition="step2">
+    <p>You can only go to Step 2 from here</p>
+  </state-def>
+
+  <state-def name="step2" transition="step1,step3">
+    <p>You can go back to Step 1 or forward to Step 3</p>
+  </state-def>
+
+  <state-def name="step3">
+    <p>Final step - anywhere to go from here</p>
+  </state-def>
+</state-machine>
+```
+
+**Event Listeners:**
+```html
+<state-machine id="my-machine" name="app" initial="home">
+  <!-- ... states ... -->
+</state-machine>
+
+<script type="module">
+  import './StateMachine.elements.js'
+
+  const machine = document.getElementById('my-machine')
+
+  machine.addEventListener('state-enter', (e) => {
+    console.log('Entered:', e.detail.state)
+  })
+
+  machine.addEventListener('state-change', (e) => {
+    console.log('State changed:', e.detail)
+  })
+</script>
+```
+
+**Multiple Machines:**
+```html
+<!-- Navigation Machine -->
+<state-machine name="nav" initial="dashboard">
+  <state-nav to="dashboard">Dashboard</state-nav>
+  <state-nav to="settings">Settings</state-nav>
+
+  <state-def name="dashboard">
+    <h1>Dashboard</h1>
+  </state-def>
+
+  <state-def name="settings">
+    <h1>Settings</h1>
+  </state-def>
+</state-machine>
+
+<!-- Modal Machine -->
+<state-machine name="modal">
+  <state-def name="login">
+    <div>Login Modal</div>
+  </state-def>
+
+  <state-def name="signup">
+    <div>Signup Modal</div>
+  </state-def>
+</state-machine>
+```
+
+**See Also:**
+- [elements-demo.html](./elements-demo.html) - Interactive Web Components demo
+- [index.html](./index.html) - Programmatic API demo
+- [test.html](./test.html) - Test suite
+
 ## API Reference
 
 ### StateMachine

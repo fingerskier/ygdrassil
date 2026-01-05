@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ygdrassil Web Components Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      font-size: 1.1em;
+      opacity: 0.9;
+    }
+
+    main {
+      padding: 40px;
+    }
+
+    section {
+      margin-bottom: 40px;
+      padding-bottom: 30px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    section:last-child {
+      border-bottom: none;
+    }
+
+    h2 {
+      color: #667eea;
+      margin-bottom: 20px;
+      font-size: 1.8em;
+    }
+
+    h3 {
+      color: #764ba2;
+      margin-bottom: 15px;
+      font-size: 1.4em;
+    }
+
+    /* Navigation Styles */
+    state-nav button,
+    state-nav a {
+      display: inline-block;
+      padding: 12px 24px;
+      margin: 5px;
+      border: 2px solid #667eea;
+      background: white;
+      color: #667eea;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    state-nav button:hover,
+    state-nav a:hover {
+      background: #667eea;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    state-nav button.active,
+    state-nav a.active {
+      background: #667eea;
+      color: white;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    /* State Content Styles */
+    state-def {
+      display: block;
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    state-def h2 {
+      margin-top: 0;
+    }
+
+    state-def p {
+      margin-bottom: 15px;
+      font-size: 1.05em;
+    }
+
+    state-def ul {
+      margin-left: 20px;
+      margin-bottom: 15px;
+    }
+
+    state-def li {
+      margin-bottom: 8px;
+    }
+
+    /* Query Display */
+    state-query {
+      display: block;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+    }
+
+    state-query pre {
+      margin: 0;
+      color: #555;
+    }
+
+    .info-box {
+      background: #e3f2fd;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      border-left: 4px solid #2196f3;
+    }
+
+    .info-box h4 {
+      color: #1976d2;
+      margin-bottom: 10px;
+    }
+
+    .code-block {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 20px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .machine-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .machine-box {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      border: 2px solid #e0e0e0;
+    }
+
+    footer {
+      background: #f8f9fa;
+      padding: 20px;
+      text-align: center;
+      color: #666;
+    }
+
+    footer a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    .controls {
+      margin: 20px 0;
+    }
+
+    .controls input {
+      padding: 10px;
+      border: 2px solid #667eea;
+      border-radius: 6px;
+      margin-right: 10px;
+      font-size: 16px;
+    }
+
+    .controls button {
+      padding: 10px 20px;
+      border: 2px solid #667eea;
+      background: #667eea;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .controls button:hover {
+      background: #5568d3;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      header {
+        padding: 30px 20px;
+      }
+
+      header h1 {
+        font-size: 2em;
+      }
+
+      main {
+        padding: 20px;
+      }
+
+      .machine-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🌳 Ygdrassil Web Components</h1>
+      <p>Declarative State Machines with Custom HTML Elements</p>
+    </header>
+
+    <main>
+      <!-- Introduction Section -->
+      <section>
+        <h2>Welcome to Web Components Demo</h2>
+        <div class="info-box">
+          <h4>What are Web Components?</h4>
+          <p>
+            This demo showcases Ygdrassil state machines using custom HTML elements.
+            No JavaScript required - just declare your states in HTML!
+          </p>
+        </div>
+      </section>
+
+      <!-- Main State Machine Demo -->
+      <section>
+        <h2>Main Demo</h2>
+
+        <state-machine name="main" initial="welcome">
+          <!-- Navigation -->
+          <div style="margin-bottom: 20px;">
+            <state-nav to="welcome">Welcome</state-nav>
+            <state-nav to="features">Features</state-nav>
+            <state-nav to="examples">Examples</state-nav>
+            <state-nav to="api">API</state-nav>
+          </div>
+
+          <!-- States -->
+          <state-def name="welcome">
+            <h2>👋 Welcome!</h2>
+            <p>
+              You're experiencing Ygdrassil state machines through Web Components.
+              This entire application is built using custom HTML elements.
+            </p>
+            <p>
+              Click the buttons above to navigate between states. Notice how the URL
+              updates and the content changes smoothly.
+            </p>
+            <div class="info-box">
+              <h4>Try This:</h4>
+              <ul>
+                <li>Navigate to different states using the buttons</li>
+                <li>Bookmark the URL and return to it</li>
+                <li>Use browser back/forward buttons</li>
+                <li>Share the URL with the state preserved</li>
+              </ul>
+            </div>
+          </state-def>
+
+          <state-def name="features">
+            <h2>✨ Features</h2>
+            <p>Ygdrassil Web Components provide:</p>
+            <ul>
+              <li><strong>Declarative Syntax:</strong> Define states in HTML</li>
+              <li><strong>URL Synchronization:</strong> States persist in the URL hash</li>
+              <li><strong>Transition Control:</strong> Define allowed state transitions</li>
+              <li><strong>Event System:</strong> Listen to state changes</li>
+              <li><strong>No Build Required:</strong> Works directly in browsers</li>
+              <li><strong>Progressive Enhancement:</strong> Degrades gracefully</li>
+            </ul>
+            <p style="margin-top: 20px;">
+              All the power of Ygdrassil state machines, now accessible through
+              simple HTML tags!
+            </p>
+          </state-def>
+
+          <state-def name="examples" transition="welcome,features,api">
+            <h2>📝 Example Code</h2>
+            <p>Here's how simple it is to create a state machine:</p>
+            <div class="code-block">
+&lt;state-machine name="app" initial="home"&gt;
+  &lt;state-nav to="home"&gt;Home&lt;/state-nav&gt;
+  &lt;state-nav to="about"&gt;About&lt;/state-nav&gt;
+
+  &lt;state-def name="home"&gt;
+    &lt;h1&gt;Home Page&lt;/h1&gt;
+    &lt;p&gt;Welcome to my app!&lt;/p&gt;
+  &lt;/state-def&gt;
+
+  &lt;state-def name="about"&gt;
+    &lt;h1&gt;About Page&lt;/h1&gt;
+    &lt;p&gt;Built with Ygdrassil&lt;/p&gt;
+  &lt;/state-def&gt;
+&lt;/state-machine&gt;
+            </div>
+            <p style="margin-top: 20px;">
+              <strong>Note:</strong> This state has restricted transitions - you can only
+              navigate to Welcome, Features, or API from here!
+            </p>
+          </state-def>
+
+          <state-def name="api">
+            <h2>🔧 API Reference</h2>
+            <h3>&lt;state-machine&gt;</h3>
+            <ul>
+              <li><code>name</code> - Machine identifier (default: "default")</li>
+              <li><code>initial</code> - Initial state to activate</li>
+            </ul>
+
+            <h3>&lt;state-def&gt;</h3>
+            <ul>
+              <li><code>name</code> - State name (required)</li>
+              <li><code>transition</code> - Comma-separated allowed next states</li>
+              <li><code>onenter</code> - Global function name to call on enter</li>
+              <li><code>onexit</code> - Global function name to call on exit</li>
+            </ul>
+
+            <h3>&lt;state-nav&gt;</h3>
+            <ul>
+              <li><code>to</code> - Target state (required)</li>
+              <li><code>type</code> - "button" or "link" (default: "button")</li>
+              <li><code>machine</code> - Target machine name (default: parent)</li>
+              <li><code>data-*</code> - Query parameters to pass</li>
+            </ul>
+
+            <h3>&lt;state-query&gt;</h3>
+            <ul>
+              <li><code>format</code> - "json" or "list" (default: "json")</li>
+              <li><code>machine</code> - Target machine name (default: parent)</li>
+            </ul>
+          </state-def>
+        </state-machine>
+      </section>
+
+      <!-- Query Parameters Demo -->
+      <section>
+        <h2>Query Parameters</h2>
+        <p>Demonstrate passing data via query parameters:</p>
+
+        <div class="controls">
+          <input type="text" id="param-key" placeholder="Key" />
+          <input type="text" id="param-value" placeholder="Value" />
+          <button onclick="setQueryParam()">Set Parameter</button>
+        </div>
+
+        <state-machine name="main">
+          <state-query format="json"></state-query>
+        </state-machine>
+      </section>
+
+      <!-- Multiple Machines Demo -->
+      <section>
+        <h2>Multiple State Machines</h2>
+        <p>Run multiple independent state machines simultaneously:</p>
+
+        <div class="machine-grid">
+          <div class="machine-box">
+            <h3>Machine A</h3>
+            <state-machine name="machine-a" initial="alpha">
+              <state-nav to="alpha">Alpha</state-nav>
+              <state-nav to="beta">Beta</state-nav>
+              <state-nav to="gamma">Gamma</state-nav>
+
+              <state-def name="alpha">
+                <p>State: <strong>Alpha</strong></p>
+              </state-def>
+              <state-def name="beta">
+                <p>State: <strong>Beta</strong></p>
+              </state-def>
+              <state-def name="gamma">
+                <p>State: <strong>Gamma</strong></p>
+              </state-def>
+            </state-machine>
+          </div>
+
+          <div class="machine-box">
+            <h3>Machine B</h3>
+            <state-machine name="machine-b" initial="one">
+              <state-nav to="one">One</state-nav>
+              <state-nav to="two">Two</state-nav>
+              <state-nav to="three">Three</state-nav>
+
+              <state-def name="one">
+                <p>State: <strong>One</strong></p>
+              </state-def>
+              <state-def name="two">
+                <p>State: <strong>Two</strong></p>
+              </state-def>
+              <state-def name="three">
+                <p>State: <strong>Three</strong></p>
+              </state-def>
+            </state-machine>
+          </div>
+        </div>
+
+        <div class="info-box" style="margin-top: 20px;">
+          <h4>Notice:</h4>
+          <p>
+            Both machines operate independently. Check the URL - it contains
+            both <code>yg-machine-a</code> and <code>yg-machine-b</code> parameters!
+          </p>
+        </div>
+      </section>
+
+      <!-- Event Listeners Demo -->
+      <section>
+        <h2>Event Listeners</h2>
+        <p>Listen to state change events:</p>
+
+        <div class="info-box">
+          <h4>Event Log:</h4>
+          <div id="event-log" style="font-family: monospace; max-height: 200px; overflow-y: auto;">
+            <p style="color: #999;">Events will appear here...</p>
+          </div>
+        </div>
+
+        <state-machine name="events" initial="start" id="event-machine">
+          <state-nav to="start">Start</state-nav>
+          <state-nav to="middle">Middle</state-nav>
+          <state-nav to="end">End</state-nav>
+
+          <state-def name="start">
+            <p>Navigate to other states to see events logged above.</p>
+          </state-def>
+          <state-def name="middle">
+            <p>Check the event log above!</p>
+          </state-def>
+          <state-def name="end">
+            <p>Events are being tracked in real-time.</p>
+          </state-def>
+        </state-machine>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Built with Ygdrassil Web Components |
+        <a href="https://github.com/fingerskier/ygdrassil" target="_blank">GitHub</a> |
+        <a href="./index.html">Vanilla JS Demo</a> |
+        <a href="./test.html">Run Tests</a>
+      </p>
+    </footer>
+  </div>
+
+  <script type="module">
+    import './StateMachine.elements.js'
+
+    // Query parameter helper
+    window.setQueryParam = function() {
+      const key = document.getElementById('param-key').value.trim()
+      const value = document.getElementById('param-value').value.trim()
+
+      if (key) {
+        const machine = document.querySelector('state-machine[name="main"]')
+        if (machine && machine.machine) {
+          machine.machine.setQuery({ [key]: value || null })
+          document.getElementById('param-key').value = ''
+          document.getElementById('param-value').value = ''
+        }
+      }
+    }
+
+    // Event logging
+    const eventMachine = document.getElementById('event-machine')
+    const eventLog = document.getElementById('event-log')
+
+    function logEvent(type, detail) {
+      const time = new Date().toLocaleTimeString()
+      const entry = document.createElement('div')
+      entry.style.marginBottom = '5px'
+      entry.innerHTML = `<span style="color: #667eea;">[${time}]</span> <strong>${type}:</strong> ${JSON.stringify(detail)}`
+
+      // Clear placeholder
+      if (eventLog.children[0]?.textContent === 'Events will appear here...') {
+        eventLog.innerHTML = ''
+      }
+
+      eventLog.appendChild(entry)
+      eventLog.scrollTop = eventLog.scrollHeight
+    }
+
+    eventMachine.addEventListener('state-enter', (e) => {
+      logEvent('state-enter', { state: e.detail.state })
+    })
+
+    eventMachine.addEventListener('state-exit', (e) => {
+      logEvent('state-exit', { state: e.detail.state })
+    })
+
+    eventMachine.addEventListener('state-change', (e) => {
+      logEvent('state-change', { currentState: e.detail.currentState })
+    })
+
+    console.log('Web Components demo loaded')
+  </script>
+</body>
+</html>

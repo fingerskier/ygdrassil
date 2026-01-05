@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Components Tests</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test {
+      margin: 10px 0;
+      padding: 10px;
+      background: white;
+      border-left: 4px solid #ccc;
+    }
+    .test.pass {
+      border-color: #4caf50;
+    }
+    .test.fail {
+      border-color: #f44336;
+    }
+    h1 {
+      color: #333;
+    }
+    #results {
+      margin-top: 20px;
+    }
+    state-machine {
+      display: block;
+      padding: 10px;
+      border: 1px solid #ddd;
+      margin: 10px 0;
+      background: white;
+    }
+    state-def {
+      display: block;
+      padding: 10px;
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Web Components Tests</h1>
+  <div id="results"></div>
+
+  <!-- Test Machine -->
+  <div style="display: none;">
+    <state-machine id="test-machine" name="test" initial="state1">
+      <state-def name="state1">State 1 Content</state-def>
+      <state-def name="state2">State 2 Content</state-def>
+      <state-def name="state3" transition="state1">State 3 Content</state-def>
+    </state-machine>
+  </div>
+
+  <script type="module">
+    import './StateMachine.elements.js'
+
+    const results = document.getElementById('results')
+    let passCount = 0
+    let failCount = 0
+
+    function test(name, fn) {
+      const div = document.createElement('div')
+      div.className = 'test'
+
+      try {
+        fn()
+        div.classList.add('pass')
+        div.innerHTML = `✓ ${name}`
+        passCount++
+      } catch (error) {
+        div.classList.add('fail')
+        div.innerHTML = `✗ ${name}<br><small>${error.message}</small>`
+        failCount++
+        console.error(error)
+      }
+
+      results.appendChild(div)
+    }
+
+    function assert(condition, message) {
+      if (!condition) throw new Error(message || 'Assertion failed')
+    }
+
+    function assertEquals(actual, expected, message) {
+      if (actual !== expected) {
+        throw new Error(message || `Expected ${expected}, got ${actual}`)
+      }
+    }
+
+    // Wait for custom elements to be defined
+    await customElements.whenDefined('state-machine')
+    await customElements.whenDefined('state-def')
+    await customElements.whenDefined('state-nav')
+    await customElements.whenDefined('state-query')
+
+    console.log('Running Web Components tests...')
+
+    test('Custom elements are defined', () => {
+      assert(customElements.get('state-machine'))
+      assert(customElements.get('state-def'))
+      assert(customElements.get('state-nav'))
+      assert(customElements.get('state-query'))
+    })
+
+    test('StateMachine element creates machine', () => {
+      const machine = document.getElementById('test-machine')
+      assert(machine)
+      assert(machine.machine, 'Machine instance should exist')
+      assertEquals(machine.machine.name, 'test')
+    })
+
+    test('StateMachine initializes with initial state', () => {
+      const machine = document.getElementById('test-machine')
+      assertEquals(machine.currentState, 'state1')
+    })
+
+    test('State definitions are registered', () => {
+      const machine = document.getElementById('test-machine')
+      assert(machine.machine.states['state1'])
+      assert(machine.machine.states['state2'])
+      assert(machine.machine.states['state3'])
+    })
+
+    test('Active state is visible, others hidden', () => {
+      const machine = document.getElementById('test-machine')
+      const states = machine.querySelectorAll('state-def')
+
+      // Find state1 (should be visible)
+      const state1 = Array.from(states).find(s => s.getAttribute('name') === 'state1')
+      const state2 = Array.from(states).find(s => s.getAttribute('name') === 'state2')
+
+      assert(state1.hasAttribute('active'), 'State1 should be active')
+      assert(!state2.hasAttribute('active'), 'State2 should not be active')
+    })
+
+    test('gotoState method works', async () => {
+      const machine = document.getElementById('test-machine')
+      machine.gotoState('state2')
+
+      // Wait for async state change
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      assertEquals(machine.currentState, 'state2')
+    })
+
+    test('is() method works', () => {
+      const machine = document.getElementById('test-machine')
+      assert(machine.is('state2'), 'Should be in state2')
+      assert(!machine.is('state1'), 'Should not be in state1')
+    })
+
+    test('Transition control is enforced', async () => {
+      const machine = document.getElementById('test-machine')
+
+      // Go to state3
+      machine.gotoState('state3')
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      // Try to go to state2 (should be blocked by transition constraint)
+      machine.gotoState('state2')
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      assertEquals(machine.currentState, 'state3', 'Should stay in state3 due to transition constraint')
+    })
+
+    test('state-nav element creates button', () => {
+      const nav = document.createElement('state-nav')
+      nav.setAttribute('to', 'state1')
+      document.body.appendChild(nav)
+
+      // Wait for initialization
+      setTimeout(() => {
+        const button = nav.querySelector('button')
+        assert(button, 'Should create a button element')
+        document.body.removeChild(nav)
+      }, 100)
+    })
+
+    test('state-nav with type="link" creates anchor', () => {
+      const nav = document.createElement('state-nav')
+      nav.setAttribute('to', 'state1')
+      nav.setAttribute('type', 'link')
+      document.body.appendChild(nav)
+
+      setTimeout(() => {
+        const link = nav.querySelector('a')
+        assert(link, 'Should create an anchor element')
+        document.body.removeChild(nav)
+      }, 100)
+    })
+
+    test('Events are fired on state change', (done) => {
+      const machine = document.getElementById('test-machine')
+      let enterFired = false
+      let exitFired = false
+      let changeFired = false
+
+      const enterHandler = (e) => {
+        enterFired = true
+        assertEquals(e.detail.state, 'state1')
+      }
+
+      const exitHandler = (e) => {
+        exitFired = true
+      }
+
+      const changeHandler = (e) => {
+        changeFired = true
+        assert(e.detail.currentState)
+      }
+
+      machine.addEventListener('state-enter', enterHandler)
+      machine.addEventListener('state-exit', exitHandler)
+      machine.addEventListener('state-change', changeHandler)
+
+      // Change state
+      machine.gotoState('state1')
+
+      setTimeout(() => {
+        machine.removeEventListener('state-enter', enterHandler)
+        machine.removeEventListener('state-exit', exitHandler)
+        machine.removeEventListener('state-change', changeHandler)
+
+        if (!enterFired || !changeFired) {
+          throw new Error('Events not fired')
+        }
+      }, 100)
+    })
+
+    // Display summary after all tests
+    setTimeout(() => {
+      const summary = document.createElement('div')
+      summary.style.marginTop = '20px'
+      summary.style.padding = '20px'
+      summary.style.background = passCount > failCount ? '#e8f5e9' : '#ffebee'
+      summary.style.borderRadius = '4px'
+      summary.innerHTML = `
+        <h2>Test Summary</h2>
+        <p><strong>Passed:</strong> ${passCount}</p>
+        <p><strong>Failed:</strong> ${failCount}</p>
+        <p><strong>Total:</strong> ${passCount + failCount}</p>
+      `
+      results.appendChild(summary)
+
+      console.log(`Web Components tests complete: ${passCount} passed, ${failCount} failed`)
+    }, 1000)
+  </script>
+</body>
+</html>
