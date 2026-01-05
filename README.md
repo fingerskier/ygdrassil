@@ -1,74 +1,35 @@
 # Ygdrassil
 
-**Ygdrassil** is a very basic state machine implementation for React.
-Each state is declared in JSX and only the active state's children are rendered.
-The active state and context variables are synced the URL hash/query so app state can be bookmarked.
+**Ygdrassil** is a lightweight state machine library that syncs state with the URL hash/query for bookmarkable application states.
 
-**Also available:** A [vanilla JavaScript version](./vanilla) with zero dependencies for use in any web project without React. Includes both programmatic API and Web Components (custom HTML elements) for declarative usage.
+Available in two flavors:
+- **React**: Declarative JSX components with hooks
+- **Vanilla JS**: Zero dependencies, works anywhere (includes Web Components)
+
+## TLDR - Quick Links
+
+- 📚 [**Common Features**](#features) - What Ygdrassil does
+- ⚛️ [**React Version**](#react-version) - Installation, API, and usage for React
+- 🎯 [**Vanilla JS Version**](#vanilla-javascript-version) - Pure JavaScript with no dependencies
+- 🚀 [**Demo / Examples**](#demo--example--test) - See it in action
 
 
 ## Features
 
-- `StateMachine` provider that manages the current state.
-  - prop `name` prop for identifying the machine; shows up in the URL as `yg-<name>=yadayada`
-  - optional prop `initial` name of the initial state to render
-    - w/o `initial` no state is rendered until the user navigates to one
-  - optional prop `className` to wrap the children in a `<div>` with those classes
-- `State` component for individual states
-  - optional prop `onEnter` ~ fx run when entering the state
-  - optional prop `onExit` ~ fx run when exiting the state
-  - optional prop `transition` prop for listing allowed transitions from the state
-    - if no `transition` prop is provided it will transition to any other state
-- `useStateMachine` hook for reading or changing the current state.
-  - `query` React-state object that mirrors the values in the URL query-string
-  - `gotoState` function for changing the current state
-  - `currentState` string of the current state's name
-  - `close` unloads the current state-machine and URL params
-  - `is` function to check if the current state matches a given name
-  - `availableTransitions` array of allowed transitions from the current state
-  - `setQuery` function for updating the query string & React-state object
-    - first argument is an object with key-value pairs to set
-    - second argument is a boolean: true means it will replace the entire string with the equivalent of the given object
-  - `registerState` function for programmatically registering a state, takes these arguments:
-    - `name` ~ name of the state to register
-    - `transition` ~ array of allowed transitions from the state
-    - `onEnter` ~ function to run when entering the state
-    - `onExit` ~ function to run when exiting the state
-  - `unregisterState` function for removing a state, takes the `name` of the state to remove
-  - `param` string with is used to identify this state-machine in the URL hash
-    - if the state-machine is named `demo` the URL will contain `yg-demo=one`
-    - the value of that param is the name of the active state
-  - `StateButton` convenience component for state navigation
-    - prop `to` for the name of the state to navigate to
-    - prop `className` adds those classes to the button
-      - if a StateButton's `to` matches the current state it will have an `active` class
-    - optional `onClick` runs before the state change
-    - children are rendered if given, otherwise the button will render the `to` string in the button
-  - `StateLink` is just like `StateButton` but renders an `<a>` tag instead of a `<button>`
-  - `ExternalButton` is like `StateButton` but can be used outside of a `StateMachine` context.
-    - you must give it the `machine` prop with the name of the target state-machine
-    - optional `onClick` runs before the state change
-  - `ExternalLink` is like `ExternalButton` but renders an `<a>` tag instead of a `<button>`
+**Common to both React and Vanilla versions:**
 
+- 🔗 **URL-Based State**: State synced with URL hash for bookmarkable/shareable app states
+- 🎯 **Transition Control**: Define allowed transitions between states
+- 🪝 **Lifecycle Hooks**: `onEnter` and `onExit` callbacks for state changes
+- 🔍 **Query Parameters**: Built-in query parameter management
+- 🔄 **Multiple Machines**: Run multiple independent state machines simultaneously
+- 📦 **Small & Fast**: Minimal footprint
 
-## Demo / Example / Test
+---
 
-This repository includes a small demo app.
-You can view it online here: [https://fingerskier.github.io/ygdrassil/](https://fingerskier.github.io/ygdrassil/)
-Or view it offline:
+## React Version
 
-```bash
-git clone https://github.com/fingerskier/ygdrassil.git
-cd ygdrassil
-npm install
-npm run dev
-```
-
-For the vanilla JavaScript version, see the [vanilla/README.md](./vanilla/README.md) for usage instructions and examples.
-
-## Installation
-
-### React Version
+### Installation
 
 ```bash
 npm install ygdrassil
@@ -78,23 +39,91 @@ npm install ygdrassil
 import { StateMachine, State, useStateMachine } from 'ygdrassil'
 ```
 
-### Vanilla JavaScript Version
+### React Components & API
 
-**Programmatic API:**
+**`<StateMachine>` Provider**
+- `name` - Identifies the machine; appears in URL as `yg-<name>`
+- `initial` - Initial state to render (optional)
+- `className` - Wraps children in a `<div>` with these classes (optional)
+
+**`<State>` Component**
+- `onEnter` - Function called when entering the state (optional)
+- `onExit` - Function called when exiting the state (optional)
+- `transition` - Array of allowed next states (optional, defaults to any state)
+
+**`useStateMachine()` Hook**
+
+Returns an object with:
+- `currentState` - String of the current state's name
+- `query` - Object mirroring URL query-string values
+- `gotoState(name)` - Navigate to a different state
+- `close()` - Unload the state machine and URL params
+- `is(name)` - Check if current state matches given name
+- `availableTransitions` - Array of allowed transitions from current state
+- `setQuery(obj, replace?)` - Update query string
+  - `obj` - Key-value pairs to set
+  - `replace` - If true, replaces entire query string
+- `registerState(name, transition, onEnter, onExit)` - Dynamically register a state
+- `unregisterState(name)` - Remove a state
+- `param` - URL parameter name (e.g., `yg-demo`)
+
+**Navigation Components**
+- `<StateButton to="stateName">` - Button for state navigation
+  - Auto-adds `active` class when `to` matches current state
+  - Optional `onClick` runs before state change
+  - Optional `className`
+- `<StateLink to="stateName">` - Same as `StateButton` but renders an `<a>` tag
+- `<ExternalButton machine="machineName" to="stateName">` - Navigate from outside a StateMachine context
+- `<ExternalLink>` - Same as `ExternalButton` but renders an `<a>` tag
+
+### React Example
+
+```jsx
+import { StateMachine, State, useStateMachine } from 'ygdrassil'
+
+function App() {
+  return (
+    <StateMachine name="app" initial="home">
+      <Navigation />
+
+      <State name="home">
+        <h1>Home Page</h1>
+      </State>
+
+      <State name="about" onEnter={() => console.log('About loaded')}>
+        <h1>About Page</h1>
+      </State>
+    </StateMachine>
+  )
+}
+
+function Navigation() {
+  const { StateButton } = useStateMachine()
+  return (
+    <nav>
+      <StateButton to="home">Home</StateButton>
+      <StateButton to="about">About</StateButton>
+    </nav>
+  )
+}
+```
+
+---
+
+## Vanilla JavaScript Version
+
+The vanilla version provides **zero-dependency** state machine functionality for any web project. No React, no build tools, no frameworks required.
+
+### Installation
+
+**Via npm:**
 ```bash
 npm install ygdrassil
 ```
 
+**Programmatic API:**
 ```javascript
 import { StateMachine } from 'ygdrassil/vanilla'
-
-const machine = new StateMachine({
-  name: 'app',
-  initial: 'home',
-  states: {
-    home: { onEnter: () => console.log('Home!') }
-  }
-})
 ```
 
 **Web Components (Custom HTML Elements):**
@@ -102,23 +131,7 @@ const machine = new StateMachine({
 import 'ygdrassil/vanilla/elements'
 ```
 
-```html
-<state-machine name="app" initial="home">
-  <state-nav to="home">Home</state-nav>
-  <state-nav to="about">About</state-nav>
-
-  <state-def name="home">
-    <h1>Home Page</h1>
-  </state-def>
-
-  <state-def name="about">
-    <h1>About Page</h1>
-  </state-def>
-</state-machine>
-```
-
-Or use directly in browser:
-
+**Or use directly in browser:**
 ```html
 <script type="module">
   import { StateMachine } from './node_modules/ygdrassil/vanilla/StateMachine.js'
@@ -126,3 +139,157 @@ Or use directly in browser:
   import './node_modules/ygdrassil/vanilla/StateMachine.elements.js'
 </script>
 ```
+
+### Vanilla Programmatic API
+
+```javascript
+import { StateMachine } from 'ygdrassil/vanilla'
+
+const machine = new StateMachine({
+  name: 'app',
+  initial: 'home',
+  onEnter: (state) => console.log(`Entering: ${state}`),  // Global hook
+  onExit: (state) => console.log(`Exiting: ${state}`),    // Global hook
+  states: {
+    home: {
+      onEnter: () => {
+        document.getElementById('app').innerHTML = '<h1>Home</h1>'
+      },
+      transition: ['about']  // Can only go to 'about' from here
+    },
+    about: {
+      onEnter: () => {
+        document.getElementById('app').innerHTML = '<h1>About</h1>'
+      }
+    }
+  }
+})
+
+// Navigate to a state
+machine.gotoState('about')
+
+// With query parameters
+machine.gotoState('profile', { userId: 123 })
+
+// Subscribe to state changes
+const unsubscribe = machine.subscribe(({ currentState, query }) => {
+  console.log('State changed:', currentState)
+})
+```
+
+**Methods:**
+- `gotoState(name, data?, replace?)` - Navigate to a state
+- `registerState(name, definition)` - Add a state dynamically
+- `unregisterState(name)` - Remove a state
+- `close()` - Deactivate and clean up
+- `is(name)` - Check if current state matches name
+- `getAvailableTransitions()` - Get allowed next states
+- `getQuery()` - Get query parameters as object
+- `setQuery(obj, replace?)` - Update query parameters
+- `subscribe(listener)` - Listen for state changes
+- `destroy()` - Clean up and remove listeners
+
+**Properties:**
+- `currentState` - Current active state name
+- `states` - Registry of all states
+- `name` - Machine name
+- `param` - URL parameter name (`yg-<name>`)
+
+### Vanilla Web Components
+
+Use declarative HTML custom elements:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My App</title>
+</head>
+<body>
+  <state-machine name="app" initial="home">
+    <!-- Navigation -->
+    <state-nav to="home">Home</state-nav>
+    <state-nav to="about">About</state-nav>
+    <state-nav to="contact" data-section="general">Contact</state-nav>
+
+    <!-- States -->
+    <state-def name="home">
+      <h1>Welcome Home!</h1>
+      <p>This is the home page.</p>
+    </state-def>
+
+    <state-def name="about" transition="home,contact">
+      <h1>About Us</h1>
+      <p>Can navigate to home or contact from here.</p>
+    </state-def>
+
+    <state-def name="contact">
+      <h1>Contact</h1>
+      <state-query format="list"></state-query>
+    </state-def>
+  </state-machine>
+
+  <script type="module" src="./node_modules/ygdrassil/vanilla/StateMachine.elements.js"></script>
+</body>
+</html>
+```
+
+**Custom Elements:**
+- `<state-machine name="app" initial="home">` - Container for states
+- `<state-def name="stateName" transition="state1,state2">` - Define a state
+- `<state-nav to="stateName" type="button|link">` - Navigation button/link
+- `<state-query format="json|list">` - Display query parameters
+
+**Events:**
+- `state-enter` - Fired when entering a state
+- `state-exit` - Fired when exiting a state
+- `state-change` - Fired on any state change
+
+### Vanilla Features
+
+- ✅ Zero dependencies - pure JavaScript
+- ✅ Global `onEnter` and `onExit` hooks (runs for all state changes)
+- ✅ State-level lifecycle hooks
+- ✅ Transition control
+- ✅ Query parameter management
+- ✅ Event subscription for reactive updates
+- ✅ Web Components for declarative HTML usage
+- ✅ Helper functions: `createStateButton()`, `createStateLink()`
+- ✅ Works in all modern browsers (ES6+)
+
+**📖 Full Documentation:** See [vanilla/README.md](./vanilla/README.md) for complete API reference and advanced examples.
+
+
+---
+
+## Demo / Example / Test
+
+### Online Demo
+
+View the live demo: [https://fingerskier.github.io/ygdrassil/](https://fingerskier.github.io/ygdrassil/)
+
+### Run Locally
+
+**React demo:**
+```bash
+git clone https://github.com/fingerskier/ygdrassil.git
+cd ygdrassil
+npm install
+npm run dev
+```
+
+**Vanilla JS demos:**
+```bash
+cd vanilla
+# Open index.html (programmatic API) or elements-demo.html (Web Components) in your browser
+# Or serve with:
+npx serve .
+```
+
+## Contributing
+
+Contributions welcome! Please submit issues and pull requests to the repository.
+
+## License
+
+MIT License - see the main repository for details.
