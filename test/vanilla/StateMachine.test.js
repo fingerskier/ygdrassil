@@ -125,6 +125,19 @@ describe('vanilla StateMachine: baseline', () => {
     expect(m.getAvailableTransitions()).toEqual([])
   })
 
+  it('gotoState returns boolean and fires onTransitionDenied', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const denied = vi.fn()
+    const m = makeMachine({
+      name: 'app', initial: 'a', onTransitionDenied: denied,
+      states: { a: { transition: ['b'] }, b: {}, c: {} },
+    })
+    expect(m.gotoState('c')).toBe(false)
+    expect(denied).toHaveBeenCalledWith('a', 'c')
+    expect(m.gotoState('b')).toBe(true)
+    warn.mockRestore()
+  })
+
   it('subscribe notifies on state change and unsubscribe stops it', () => {
     const m = makeMachine({ name: 'app', initial: 'home', states: { home: {}, about: {} } })
     const listener = vi.fn()

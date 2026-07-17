@@ -28,6 +28,7 @@ export class StateMachine {
    * @param {Object} [config.states={}] - State definitions
    * @param {Function} [config.onEnter] - Global callback fired when entering any state
    * @param {Function} [config.onExit] - Global callback fired when exiting any state
+   * @param {Function} [config.onTransitionDenied] - Called with (from, to) when a transition is denied
    */
   constructor(config = {}) {
     this.name = config.name || '#'
@@ -36,6 +37,7 @@ export class StateMachine {
     this.currentState = null
     this.globalOnEnter = config.onEnter
     this.globalOnExit = config.onExit
+    this.onTransitionDenied = config.onTransitionDenied
     this._listeners = []
     this._initialStateEnterPending = false
 
@@ -229,6 +231,7 @@ export class StateMachine {
     // Check if transition is allowed
     if (prev?.transition && !prev.transition.includes(nextState)) {
       console.warn(`Transition from "${prevState}" to "${nextState}" not allowed.`)
+      if (this.onTransitionDenied) this.onTransitionDenied(prevState, nextState)
       // The URL already shows the forbidden state — repair it.
       if (prevState) this._repairParam(prevState)
       return false
@@ -285,20 +288,23 @@ export class StateMachine {
    * @param {string} nextState - Target state name
    * @param {Object} [data] - Additional query parameters to set
    * @param {boolean} [replace=false] - If true, replace all non-yg- query params
+   * @returns {boolean} False when the transition is denied
    */
   gotoState(nextState, data = null, replace = false) {
     if (this.currentState === nextState && !data) {
-      return // No-op if same state and no data changes
+      return true // No-op if same state and no data changes
     }
 
     const current = this.states[this.currentState]
     if (current?.transition && !current.transition.includes(nextState)) {
       console.warn(`Transition from "${this.currentState}" to "${nextState}" not allowed.`)
-      return
+      if (this.onTransitionDenied) this.onTransitionDenied(this.currentState, nextState)
+      return false
     }
 
     this._writeParam(nextState, data, replace)
     window.dispatchEvent(new HashChangeEvent('hashchange'))
+    return true
   }
 
   /**

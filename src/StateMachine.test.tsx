@@ -620,6 +620,70 @@ describe('StateMachine', () => {
     })
   })
 
+  describe('transition denial reporting', () => {
+    it('gotoState returns false and fires onTransitionDenied on a denied move', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const denied = vi.fn()
+      let result: boolean | undefined
+
+      const Nav = () => {
+        const { gotoState } = useStateMachine()
+        return <button onClick={() => { result = gotoState('page3') }}>Go</button>
+      }
+
+      render(
+        <StateMachine initial="page1" name="test" onTransitionDenied={denied}>
+          <State name="page1" transition={['page2']}><div>Page 1</div></State>
+          <State name="page2"><div>Page 2</div></State>
+          <State name="page3"><div>Page 3</div></State>
+          <Nav />
+        </StateMachine>
+      )
+
+      await act(async () => { fireEvent.click(screen.getByText('Go')) })
+
+      expect(result).toBe(false)
+      expect(denied).toHaveBeenCalledWith('page1', 'page3')
+      expect(screen.getByText('Page 1')).toBeInTheDocument()
+      warn.mockRestore()
+    })
+
+    it('gotoState returns true on an accepted move', async () => {
+      let result: boolean | undefined
+      const Nav = () => {
+        const { gotoState } = useStateMachine()
+        return <button onClick={() => { result = gotoState('page2') }}>Go</button>
+      }
+
+      render(
+        <StateMachine initial="page1" name="test">
+          <State name="page1"><div>Page 1</div></State>
+          <State name="page2"><div>Page 2</div></State>
+          <Nav />
+        </StateMachine>
+      )
+
+      await act(async () => { fireEvent.click(screen.getByText('Go')) })
+      expect(result).toBe(true)
+    })
+
+    it('fires onTransitionDenied for a rejected hash navigation', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const denied = vi.fn()
+      render(
+        <StateMachine initial="page1" name="test" onTransitionDenied={denied}>
+          <State name="page1" transition={['page2']}><div>Page 1</div></State>
+          <State name="page2"><div>Page 2</div></State>
+          <State name="page3"><div>Page 3</div></State>
+        </StateMachine>
+      )
+
+      await act(async () => { setHash('#?yg-test=page3') })
+      expect(denied).toHaveBeenCalledWith('page1', 'page3')
+      warn.mockRestore()
+    })
+  })
+
   describe('close lifecycle parity', () => {
     it('runs state-level and global onExit when the machine param is removed', async () => {
       const stateOnExit = vi.fn()

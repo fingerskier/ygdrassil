@@ -26,11 +26,12 @@ interface StateRegistrationCtx {
 
 interface Ctx extends StateRegistrationCtx {
   currentState: string | undefined
+  /** Navigate to a state; returns false when the transition is denied */
   gotoState: (
     name: string,
     data?: Record<string, string | number | null | undefined>,
     replace?: boolean,
-  ) => void
+  ) => boolean
   close: () => void
   is: (name: string) => boolean
   /** Allowed next states; null = unrestricted (any state), [] = terminal */
@@ -98,12 +99,14 @@ interface StateMachineProps {
   onEnter?: (state: string) => void
   /** Global callback fired when exiting any state */
   onExit?: (state: string) => void
+  /** Called when a transition is denied by the current state's transition list */
+  onTransitionDenied?: (from: string | undefined, to: string) => void
 }
 
 /**
  * Top-level provider. Manages state registration and transitions.
  */
-export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, name, className, onEnter: globalOnEnter, onExit: globalOnExit }) => {
+export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, name, className, onEnter: globalOnEnter, onExit: globalOnExit, onTransitionDenied }) => {
   const machineStateParam = `yg-${name ?? '#'}`
 
   const readParam = useCallback(() => {
@@ -171,6 +174,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
       const allowed = prev ? statesRef.current[prev]?.transition : undefined
       if (allowed && !allowed.includes(next)) {
         console.warn(`Transition from "${prev}" to "${next}" not allowed.`)
+        onTransitionDenied?.(prev, next)
         return false
       }
       if (prev) statesRef.current[prev]?.onExit?.()
@@ -182,7 +186,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
       setCurrentState(next)
       return true
     },
-    [globalOnEnter, globalOnExit],
+    [globalOnEnter, globalOnExit, onTransitionDenied],
   )
 
   // Public gotoState - updates URL, which triggers state change
@@ -193,12 +197,13 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
       replace = false,
     ) => {
       const current = currentRef.current
-      if (current === next && !data) return // no-op if same state and no data changes
+      if (current === next && !data) return true // no-op if same state and no data changes
 
       const allowed = current ? statesRef.current[current]?.transition : undefined
       if (allowed && !allowed.includes(next)) {
         console.warn(`Transition from "${current}" to "${next}" not allowed.`)
-        return
+        onTransitionDenied?.(current, next)
+        return false
       }
 
       // Build new URL params atomically
@@ -227,8 +232,9 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
       const newHash = `#?${params.toString()}`
       window.history.pushState(null, '', newHash)
       window.dispatchEvent(new HashChangeEvent('hashchange'))
+      return true
     },
-    [machineStateParam],
+    [machineStateParam, onTransitionDenied],
   )
 
   // Close the state machine - removes state param from URL
