@@ -146,6 +146,15 @@ describe('vanilla StateMachine: baseline', () => {
     expect(listener).toHaveBeenCalledWith(expect.objectContaining({ query: expect.objectContaining({ user: 'kim' }) }))
   })
 
+  it('createStateButton toggles aria-current with active state', async () => {
+    const { createStateButton } = await import('../../vanilla/StateMachine.js')
+    const m = makeMachine({ name: 'app', initial: 'home', states: { home: {}, about: {} } })
+    const btn = createStateButton(m, 'home')
+    expect(btn.getAttribute('aria-current')).toBe('page')
+    m.gotoState('about')
+    expect(btn.getAttribute('aria-current')).toBeNull()
+  })
+
   it('subscribe notifies on state change and unsubscribe stops it', () => {
     const m = makeMachine({ name: 'app', initial: 'home', states: { home: {}, about: {} } })
     const listener = vi.fn()

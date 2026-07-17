@@ -382,8 +382,10 @@ class StateNavElement extends HTMLElement {
   _updateActiveClass(to) {
     if (this._machine.is(to)) {
       this._navElement.classList.add('active')
+      this._navElement.setAttribute('aria-current', 'page')
     } else {
       this._navElement.classList.remove('active')
+      this._navElement.removeAttribute('aria-current')
     }
   }
 

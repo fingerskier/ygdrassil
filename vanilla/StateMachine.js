@@ -398,6 +398,9 @@ export function createStateButton(machine, targetState, options = {}) {
     const classes = [options.className || '']
     if (machine.is(targetState)) {
       classes.push('active')
+      button.setAttribute('aria-current', 'page')
+    } else {
+      button.removeAttribute('aria-current')
     }
     button.className = classes.filter(Boolean).join(' ')
   }
@@ -431,6 +434,9 @@ export function createStateLink(machine, targetState, options = {}) {
     const classes = [options.className || '']
     if (machine.is(targetState)) {
       classes.push('active')
+      link.setAttribute('aria-current', 'page')
+    } else {
+      link.removeAttribute('aria-current')
     }
     link.className = classes.filter(Boolean).join(' ')
 

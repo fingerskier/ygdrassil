@@ -390,10 +390,16 @@ export function StateButton({ data, replace, to, children, className, onClick, .
     .join(' ')
 
   return (
-    <button {...rest} className={classNames} onClick={e => {
-      onClick?.(e)
-      gotoState(to, data, replace)
-    }}>
+    <button
+      {...rest}
+      className={classNames}
+      aria-current={is(to) ? 'page' : undefined}
+      onClick={e => {
+        onClick?.(e)
+        if (e.defaultPrevented) return
+        gotoState(to, data, replace)
+      }}
+    >
       {children ?? to}
     </button>
   )
@@ -410,6 +416,7 @@ interface ExternalButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export function ExternalButton({ data, machine, to, children, className, onClick, ...rest }: ExternalButtonProps) {
   return <button {...rest} className={className} onClick={e => {
     onClick?.(e)
+    if (e.defaultPrevented) return
     // Parse existing query params
     const currentHash = window.location.hash.startsWith('#?')
       ? window.location.hash.slice(2)
@@ -469,6 +476,7 @@ export function StateLink({ data, replace, to, target, children, className, ...r
       {...rest}
       {...(target ? { target } : {})}
       className={classNames}
+      aria-current={is(to) ? 'page' : undefined}
       href={href}
     >
       {children ?? to}

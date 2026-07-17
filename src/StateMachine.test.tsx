@@ -724,6 +724,38 @@ describe('StateMachine', () => {
     })
   })
 
+  describe('navigation control behavior', () => {
+    it('StateButton does not navigate when onClick prevents default', async () => {
+      render(
+        <StateMachine initial="page1" name="test">
+          <State name="page1"><div>Page 1</div></State>
+          <State name="page2"><div>Page 2</div></State>
+          <StateButton to="page2" onClick={e => e.preventDefault()}>Go</StateButton>
+        </StateMachine>
+      )
+
+      await act(async () => { fireEvent.click(screen.getByText('Go')) })
+      expect(screen.getByText('Page 1')).toBeInTheDocument()
+      expect(screen.queryByText('Page 2')).not.toBeInTheDocument()
+    })
+
+    it('StateButton and StateLink mark the active control with aria-current', () => {
+      render(
+        <StateMachine initial="page1" name="test">
+          <State name="page1"><div>Page 1</div></State>
+          <State name="page2"><div>Page 2</div></State>
+          <StateButton to="page1">B1</StateButton>
+          <StateButton to="page2">B2</StateButton>
+          <StateLink to="page1">L1</StateLink>
+        </StateMachine>
+      )
+
+      expect(screen.getByText('B1')).toHaveAttribute('aria-current', 'page')
+      expect(screen.getByText('B2')).not.toHaveAttribute('aria-current')
+      expect(screen.getByText('L1')).toHaveAttribute('aria-current', 'page')
+    })
+  })
+
   describe('setQuery write path', () => {
     it('preserves a param another machine wrote in the same tick', async () => {
       let setQueryA: ((o: Record<string, string | number | null | undefined>) => void) | undefined
