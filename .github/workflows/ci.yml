@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test:run
+      - run: npm run build
+      - run: npm run build:lib
+      - run: node -e "import('./dist-lib/StateMachine.js').then(m => { if (!m.StateMachine || !m.useStateMachine) throw new Error('missing exports'); })"
+      - run: npm pack --dry-run

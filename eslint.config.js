@@ -25,4 +25,12 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // The library is deliberately a single module co-exporting the context,
+    // hook, and components; fast-refresh granularity doesn't apply to it.
+    files: ['src/StateMachine.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 )
