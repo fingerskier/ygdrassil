@@ -10,6 +10,39 @@ afterEach(() => {
   window.location.hash = ''
 })
 
+describe('<state-def> reconciliation', () => {
+  const mount = async (inner) => {
+    document.body.innerHTML = `<state-machine name="app" initial="home">${inner}</state-machine>`
+    await flushUpgrade()
+    return document.querySelector('state-machine')
+  }
+
+  it('registers a state-def added after initialization', async () => {
+    const el = await mount('<state-def name="home"></state-def>')
+    const def = document.createElement('state-def')
+    def.setAttribute('name', 'late')
+    el.appendChild(def)
+    await flushUpgrade()
+    expect(el.machine.states.late).toBeDefined()
+  })
+
+  it('unregisters a removed state-def', async () => {
+    const el = await mount('<state-def name="home"></state-def><state-def name="gone"></state-def>')
+    expect(el.machine.states.gone).toBeDefined()
+    el.querySelector('state-def[name="gone"]').remove()
+    await flushUpgrade()
+    expect(el.machine.states.gone).toBeUndefined()
+  })
+
+  it('applies a changed transition attribute', async () => {
+    const el = await mount('<state-def name="home" transition="a"></state-def><state-def name="a"></state-def><state-def name="b"></state-def>')
+    expect(el.machine.states.home.transition).toEqual(['a'])
+    el.querySelector('state-def[name="home"]').setAttribute('transition', 'a,b')
+    await flushUpgrade()
+    expect(el.machine.states.home.transition).toEqual(['a', 'b'])
+  })
+})
+
 describe('<state-query> rendering', () => {
   it('renders query values as text, never as HTML (list format)', async () => {
     const payload = encodeURIComponent('<img src=x onerror="window.__pwned=1">')
