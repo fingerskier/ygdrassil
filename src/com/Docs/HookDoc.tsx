@@ -39,8 +39,8 @@ export default function HookDoc() {
           </tr>
           <tr>
             <td>availableTransitions</td>
-            <td>string[]</td>
-            <td>Array of allowed next states from current state</td>
+            <td>string[] | null</td>
+            <td>Allowed next states; null means unrestricted, [] means terminal</td>
           </tr>
           <tr>
             <td>query</td>
@@ -72,7 +72,7 @@ export default function HookDoc() {
   } = useStateMachine()
 
   const handleNext = () => {
-    if (availableTransitions.includes('nextStep')) {
+    if (availableTransitions?.includes('nextStep') ?? true) {
       setQuery({ timestamp: Date.now() })
       gotoState('nextStep')
     }

@@ -475,8 +475,8 @@ describe('StateMachine', () => {
   })
 
   describe('availableTransitions', () => {
-    it('returns empty array when no transitions defined', () => {
-      let transitions: string[] = ['should be empty']
+    it('returns null (unrestricted) when no transitions are defined', () => {
+      let transitions: string[] | null = ['should be replaced']
 
       const TestComponent = () => {
         const { availableTransitions } = useStateMachine()
@@ -487,6 +487,25 @@ describe('StateMachine', () => {
       render(
         <StateMachine initial="page1" name="test">
           <State name="page1"><div>Page 1</div></State>
+          <TestComponent />
+        </StateMachine>
+      )
+
+      expect(transitions).toBeNull()
+    })
+
+    it('returns an empty array for an explicitly terminal state', () => {
+      let transitions: string[] | null = null
+
+      const TestComponent = () => {
+        const { availableTransitions } = useStateMachine()
+        transitions = availableTransitions
+        return null
+      }
+
+      render(
+        <StateMachine initial="page1" name="test">
+          <State name="page1" transition={[]}><div>Page 1</div></State>
           <TestComponent />
         </StateMachine>
       )

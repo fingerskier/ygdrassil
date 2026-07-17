@@ -17,9 +17,11 @@ export default function Controls() {
 
     return <div>
         Allowed Transitions {currentState ? `(from ${currentState})` : ''}:
-        {availableTransitions?.map && availableTransitions.map(
-            state => <StateButton key={state} to={state}>{state}</StateButton> 
-        )}
+        {availableTransitions === null
+            ? <em> any (unrestricted)</em>
+            : availableTransitions.map(
+                state => <StateButton key={state} to={state}>{state}</StateButton>
+              )}
 
         <br />
 

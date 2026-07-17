@@ -33,7 +33,8 @@ interface Ctx extends StateRegistrationCtx {
   ) => void
   close: () => void
   is: (name: string) => boolean
-  availableTransitions: string[]
+  /** Allowed next states; null = unrestricted (any state), [] = terminal */
+  availableTransitions: string[] | null
   query: Record<string, string | number>
   setQuery: (
     obj: Record<string, string | number | null | undefined>,
@@ -342,8 +343,8 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
         close,
         is: (s: string) => s === currentState,
         availableTransitions: currentState
-          ? statesRef.current[currentState]?.transition ?? []
-          : [],
+          ? statesRef.current[currentState]?.transition ?? null
+          : null,
         query,
         setQuery,
         registerState,

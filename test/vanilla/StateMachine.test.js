@@ -118,6 +118,13 @@ describe('vanilla StateMachine: baseline', () => {
     warn.mockRestore()
   })
 
+  it('getAvailableTransitions returns null for unrestricted and [] for terminal', () => {
+    const m = makeMachine({ name: 'app', initial: 'a', states: { a: {}, b: { transition: [] }, c: { transition: ['a'] } } })
+    expect(m.getAvailableTransitions()).toBeNull()
+    m.gotoState('b')
+    expect(m.getAvailableTransitions()).toEqual([])
+  })
+
   it('subscribe notifies on state change and unsubscribe stops it', () => {
     const m = makeMachine({ name: 'app', initial: 'home', states: { home: {}, about: {} } })
     const listener = vi.fn()

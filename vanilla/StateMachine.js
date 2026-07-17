@@ -326,12 +326,13 @@ export class StateMachine {
   }
 
   /**
-   * Get available transitions from current state
-   * @returns {string[]} Array of allowed state names
+   * Get available transitions from current state.
+   * @returns {string[] | null} Allowed next states; null means unrestricted
+   *   (any state), an empty array means terminal (no transitions allowed).
    */
   getAvailableTransitions() {
-    if (!this.currentState) return []
-    return this.states[this.currentState]?.transition || []
+    if (!this.currentState) return null
+    return this.states[this.currentState]?.transition ?? null
   }
 
   /**
