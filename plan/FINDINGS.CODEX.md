@@ -24,28 +24,28 @@ and then make the demo files derive from those canonical build artifacts.
 
 ### P0 — rejected navigation leaves the URL and active state inconsistent
 
-**Evidence.** Both implementations write the requested state to the hash
-before they process the synthetic `hashchange` event ([React
+**Evidence.** The programmatic `gotoState` methods correctly check the current
+state's transition list before writing the hash ([React
 `gotoState`](../src/StateMachine.tsx#L177-L220); [vanilla
-`gotoState`](../vanilla/StateMachine.js#L249-L264)). Their transition handlers
-only warn and retain the prior state when a transition is disallowed ([React
-handler](../src/StateMachine.tsx#L156-L175); [vanilla
-handler](../vanilla/StateMachine.js#L188-L219)). The browser-driven path has
-the same issue: an address-bar edit or Back/Forward event changes the hash
-first, and rejection does not restore it.
+`gotoState`](../vanilla/StateMachine.js#L249-L264)). The browser-driven path
+does not have that opportunity: address-bar edits, Back/Forward, and ordinary
+`<StateLink>` navigation change the hash before the handler runs. When the
+handler rejects that URL state, it only warns and retains the prior active state
+([React handler](../src/StateMachine.tsx#L156-L175); [vanilla
+handler](../vanilla/StateMachine.js#L188-L219)); neither implementation
+restores the prior canonical hash.
 
 **Impact.** A user can be shown state `A` while the URL says state `B`.
 Refreshing subsequently activates `B`; copied links are misleading; and Back
 can appear to do nothing. This defeats the primary bookmarkable-state promise.
 
 **Recommendation.** Centralize validation and commit into one transition
-function that returns a result such as `{ accepted, from, to, reason }`. For a
-rejected navigation, either restore the prior canonical hash with
+function that returns a result such as `{ accepted, from, to, reason }`. Retain
+the existing pre-write validation in `gotoState`. For a rejected
+browser-originated navigation, either restore the prior canonical hash with
 `history.replaceState` or explicitly adopt a documented permissive URL policy.
-Do not mutate the URL until validation passes for calls to `gotoState`.
-For browser history changes, validate then repair the URL without adding another
-history entry. Add regression tests for button, link, address-bar, Back, and
-Forward rejection paths in both APIs.
+Repairing the URL must not add another history entry. Add regression tests for
+button, link, address-bar, Back, and Forward rejection paths in both APIs.
 
 ### P0 — the published React package exports source TSX instead of a runtime build
 
