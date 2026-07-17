@@ -1,6 +1,26 @@
 {
   "name": "ygdrassil",
   "version": "2026.2.0",
+  "description": "Lightweight state machine that syncs state with the URL hash for bookmarkable app states. React components/hooks plus a zero-dependency vanilla JS twin with Web Components.",
+  "keywords": [
+    "state-machine",
+    "fsm",
+    "react",
+    "url",
+    "hash",
+    "router",
+    "web-components",
+    "vanilla"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fingerskier/ygdrassil.git"
+  },
+  "homepage": "https://fingerskier.github.io/ygdrassil/",
+  "bugs": {
+    "url": "https://github.com/fingerskier/ygdrassil/issues"
+  },
   "type": "module",
   "main": "./dist-lib/StateMachine.js",
   "types": "./dist-lib/StateMachine.d.ts",

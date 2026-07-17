@@ -19,7 +19,6 @@ export default function ApiDoc() {
 
       <h4>StateDefinition</h4>
       <pre>{`interface StateDefinition {
-  element: ReactNode
   onEnter?: () => void
   onExit?: () => void
   transition?: string[]
@@ -31,18 +30,38 @@ export default function ApiDoc() {
   transition?: string[]
   onEnter?: () => void
   onExit?: () => void
+  children: ReactElement | null
+}`}</pre>
+
+      <h4>StateMachine Props</h4>
+      <pre>{`interface StateMachineProps {
+  name?: string        // URL param becomes yg-<name>
+  initial?: string     // state to adopt when the URL has none
+  className?: string   // wrapper div rendered while active
+  onEnter?: (state: string) => void
+  onExit?: (state: string) => void
+  onTransitionDenied?: (from: string | undefined, to: string) => void
   children: ReactNode
 }`}</pre>
 
       <h4>Ctx (Context Interface)</h4>
       <pre>{`interface Ctx {
   currentState: string | undefined
-  gotoState: (name: string) => void
+  // returns false when the transition is denied
+  gotoState: (
+    name: string,
+    data?: Record<string, string | number | null | undefined>,
+    replace?: boolean,
+  ) => boolean
   close: () => void
   is: (name: string) => boolean
-  availableTransitions: string[]
+  // null = unrestricted, [] = terminal
+  availableTransitions: string[] | null
   query: Record<string, string | number>
-  setQuery: (obj: Record<string, any>, replace?: boolean) => void
+  setQuery: (
+    obj: Record<string, string | number | null | undefined>,
+    replace?: boolean,
+  ) => void
   registerState: (name: string, definition: StateDefinition) => void
   unregisterState: (name: string) => void
   param: string
@@ -74,12 +93,25 @@ https://example.com/#?yg-wizard=step2&yg-settings=profile&data=value`}</pre>
   <Component />
 </State>`}</pre>
 
+      <h3>URL & transition semantics</h3>
+      <ul>
+        <li>The transition table is authoritative: a URL edit (back/forward, paste, link)
+          to a forbidden state is rejected and the URL is repaired back to the current
+          state via history.replaceState — no new history entry</li>
+        <li>Lifecycle order on every entry, including initial/deep-linked states:
+          state onExit → state onEnter → global onExit → global onEnter</li>
+        <li>Closing a machine (or removing its yg- param) runs state and global onExit</li>
+        <li>Numeric-looking query values are coerced to numbers ("001" becomes 1) —
+          prefix IDs or read window.location.hash directly if that matters</li>
+      </ul>
+
       <h3>Best Practices</h3>
       <ul>
         <li>Use unique machine names to avoid conflicts</li>
         <li>Define transition arrays for validation</li>
         <li>Keep state names lowercase and URL-friendly</li>
         <li>Use onEnter/onExit for side effects like analytics or data loading</li>
+        <li>Use onTransitionDenied to surface blocked navigation to the user</li>
         <li>Store minimal data in query params (IDs, not full objects)</li>
         <li>Use setQuery for bookmarkable URLs with user data</li>
       </ul>

@@ -91,8 +91,9 @@ Returns an object with:
 
 **Navigation Components**
 - `<StateButton to="stateName">` - Button for state navigation
-  - Auto-adds `active` class when `to` matches current state
-  - Optional `onClick` runs before state change
+  - Active control gets the `active` class and `aria-current="page"`
+  - Optional `onClick` runs first; call `e.preventDefault()` to cancel the navigation
+  - Optional `data` (query params to merge) and `replace` (clear non-`yg-` params first)
   - Optional `className`
 - `<StateLink to="stateName">` - Same as `StateButton` but renders an `<a>` tag
 - `<ExternalButton machine="machineName" to="stateName">` - Navigate from outside a StateMachine context
@@ -199,16 +200,19 @@ const unsubscribe = machine.subscribe(({ currentState, query }) => {
 ```
 
 **Methods:**
-- `gotoState(name, data?, replace?)` - Navigate to a state
+- `gotoState(name, data?, replace?)` - Navigate to a state; returns `false` when denied
 - `registerState(name, definition)` - Add a state dynamically
 - `unregisterState(name)` - Remove a state
 - `close()` - Deactivate and clean up
 - `is(name)` - Check if current state matches name
-- `getAvailableTransitions()` - Get allowed next states
+- `getAvailableTransitions()` - `string[] | null`; `null` = unrestricted, `[]` = terminal
 - `getQuery()` - Get query parameters as object
-- `setQuery(obj, replace?)` - Update query parameters
+- `setQuery(obj, replace?)` - Update query parameters (notifies subscribers synchronously)
 - `subscribe(listener)` - Listen for state changes
 - `destroy()` - Clean up and remove listeners
+
+**Config:** in addition to `name`, `initial`, `states`, `onEnter`, and `onExit`, the
+constructor accepts `onTransitionDenied(from, to)`.
 
 **Properties:**
 - `currentState` - Current active state name
@@ -257,14 +261,14 @@ Use declarative HTML custom elements:
 
 **Custom Elements:**
 - `<state-machine name="app" initial="home">` - Container for states
-- `<state-def name="stateName" transition="state1,state2">` - Define a state
+- `<state-def name="stateName" transition="state1,state2">` - Define a state; definitions are live (removals unregister, `transition` edits apply)
 - `<state-nav to="stateName" type="button|link">` - Navigation button/link
-- `<state-query format="json|list">` - Display query parameters
+- `<state-query format="json|list">` - Display query parameters (values render as text, never HTML)
 
 **Events:**
-- `state-enter` - Fired when entering a state
-- `state-exit` - Fired when exiting a state
+- `state-enter` / `state-exit` - Fired on the `<state-machine>` when entering/exiting any state
 - `state-change` - Fired on any state change
+- `enter` / `exit` - Fired on the individual `<state-def>`
 
 ### Vanilla Features
 

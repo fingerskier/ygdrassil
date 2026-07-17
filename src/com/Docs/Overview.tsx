@@ -12,7 +12,7 @@ export default function Overview() {
       <ul>
         <li><strong>URL Synchronization</strong> - State persists in URL hash for bookmarkability</li>
         <li><strong>Multiple Machines</strong> - Run concurrent state machines via unique names</li>
-        <li><strong>Transition Validation</strong> - Optional allowed transitions per state</li>
+        <li><strong>Transition Validation</strong> - Optional allowed transitions per state; forbidden URL edits are repaired</li>
         <li><strong>Lifecycle Hooks</strong> - onEnter/onExit callbacks</li>
         <li><strong>Query Persistence</strong> - Store/retrieve arbitrary data in URL</li>
         <li><strong>Declarative API</strong> - JSX-based state definition</li>

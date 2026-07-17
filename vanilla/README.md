@@ -173,7 +173,8 @@ Creates a navigation button or link.
 
 #### `<state-query>`
 
-Displays current query parameters.
+Displays current query parameters (excluding `yg-` params). Keys and values
+are rendered as text — URL-supplied markup is never interpreted as HTML.
 
 **Attributes:**
 - `format` - "json" or "list" (default: "json")
@@ -452,6 +453,9 @@ document.body.appendChild(link)
 
 Same options as `createStateButton`.
 
+Both helpers add the `active` class and `aria-current="page"` to the control
+for the machine's current state, and keep it updated via subscription.
+
 ## Advanced Usage
 
 ### Transition Control
@@ -476,7 +480,7 @@ const machine = new StateMachine({
       onEnter: () => renderStep3()
     },
     complete: {
-      // No transitions defined = terminal state
+      transition: [], // Empty array = terminal state (omitting it = unrestricted)
       onEnter: () => renderComplete()
     }
   }
@@ -603,10 +607,11 @@ const router = new StateMachine({
     profile: {
       onEnter: () => {
         const { userId } = router.getQuery()
-        document.getElementById('app').innerHTML = `
-          <h1>Profile</h1>
-          <p>User ID: ${userId || 'Not specified'}</p>
-        `
+        // Query values come from the URL — treat them as untrusted and
+        // render them with textContent, never string-built HTML.
+        const app = document.getElementById('app')
+        app.innerHTML = '<h1>Profile</h1><p></p>'
+        app.querySelector('p').textContent = `User ID: ${userId || 'Not specified'}`
       }
     },
     settings: {

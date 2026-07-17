@@ -28,13 +28,13 @@ export default function StateDoc() {
             <td>transition</td>
             <td>string[]</td>
             <td>No</td>
-            <td>Array of allowed state names this state can transition to</td>
+            <td>Allowed next states; omit for unrestricted, pass [] for a terminal state</td>
           </tr>
           <tr>
             <td>onEnter</td>
             <td>() =&gt; void</td>
             <td>No</td>
-            <td>Callback fired when entering this state</td>
+            <td>Callback fired when entering this state, including the initial or deep-linked state</td>
           </tr>
           <tr>
             <td>onExit</td>

@@ -21,20 +21,32 @@ export default function StateMachineDoc() {
           <tr>
             <td>name</td>
             <td>string</td>
-            <td>Yes</td>
-            <td>Unique identifier for this state machine</td>
+            <td>No</td>
+            <td>Machine identifier; the URL param becomes yg-&lt;name&gt;</td>
           </tr>
           <tr>
             <td>initial</td>
             <td>string</td>
-            <td>Yes</td>
-            <td>Initial state name to start with</td>
+            <td>No</td>
+            <td>State to adopt when the URL has none for this machine</td>
           </tr>
           <tr>
             <td>className</td>
             <td>string</td>
             <td>No</td>
-            <td>CSS class for the container div</td>
+            <td>Wraps children in a div with these classes while the machine is active</td>
+          </tr>
+          <tr>
+            <td>onEnter / onExit</td>
+            <td>(state) =&gt; void</td>
+            <td>No</td>
+            <td>Global hooks fired after the state-level hooks on every change</td>
+          </tr>
+          <tr>
+            <td>onTransitionDenied</td>
+            <td>(from, to) =&gt; void</td>
+            <td>No</td>
+            <td>Called when a transition is denied by the current state's transition list</td>
           </tr>
           <tr>
             <td>children</td>
@@ -60,8 +72,10 @@ export default function StateMachineDoc() {
         <li>Automatically registers/unregisters states</li>
         <li>Manages URL hash parameter: <code>#?yg-{'{name}'}={'{state}'}</code></li>
         <li>Supports multiple concurrent machines on the same page</li>
-        <li>Validates transitions when specified</li>
+        <li>Validates transitions when specified — a rejected URL-driven navigation
+          repairs the URL back to the current state</li>
         <li>Provides context to all child components via useStateMachine hook</li>
+        <li>Renders nothing (children unmounted) while the machine has no active state</li>
       </ul>
     </div>
   )

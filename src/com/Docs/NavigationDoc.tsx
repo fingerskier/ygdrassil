@@ -8,7 +8,11 @@ export default function NavigationDoc() {
       </p>
 
       <h3>StateButton</h3>
-      <p>Button component for navigating to states within the same machine.</p>
+      <p>
+        Button component for navigating to states within the same machine. The
+        active control carries the <code>active</code> class and{' '}
+        <code>aria-current="page"</code>.
+      </p>
       <pre>{`<StateButton to='nextState' className='btn'>
   Go Next
 </StateButton>
@@ -42,12 +46,12 @@ export default function NavigationDoc() {
           <tr>
             <td>replace</td>
             <td>boolean</td>
-            <td>Replace current history entry</td>
+            <td>Clear all non-yg query params before applying data</td>
           </tr>
           <tr>
             <td>onClick</td>
             <td>(e) =&gt; void</td>
-            <td>Click handler</td>
+            <td>Runs first; call e.preventDefault() to cancel the navigation</td>
           </tr>
         </tbody>
       </table>
@@ -59,7 +63,12 @@ export default function NavigationDoc() {
 </StateLink>`}</pre>
 
       <h3>ExternalButton</h3>
-      <p>Button for navigating to states in different machines.</p>
+      <p>
+        Button for navigating to states in different machines. It writes the URL
+        directly without consulting the target machine's transition list — the
+        target machine validates on receipt and repairs the URL if the move is
+        forbidden.
+      </p>
       <pre>{`<ExternalButton
   machine='secondMachine'
   to='targetState'

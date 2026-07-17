@@ -9,12 +9,14 @@ export default function Examples() {
 
       <h3>First Machine (Basic Flow)</h3>
       <p>
-        A simple 3-state machine demonstrating basic navigation and query parameter persistence:
+        A 3-state machine with a restricted transition graph
+        (one → two → one|three, three → one). Buttons for forbidden moves warn,
+        fire onTransitionDenied, and leave the URL untouched:
       </p>
       <ul>
-        <li><strong>One</strong> - Shows query param persistence with countdown</li>
-        <li><strong>Two</strong> - Non-persistent state with navigation controls</li>
-        <li><strong>Three</strong> - Non-persistent state demonstrating return to One</li>
+        <li><strong>One</strong> - Persists its count in a query param</li>
+        <li><strong>Two</strong> - Local-only count (lost on exit)</li>
+        <li><strong>Three</strong> - Local-only count; can only return to One</li>
       </ul>
 
       <h3>Second Machine (Advanced Features)</h3>
@@ -60,15 +62,18 @@ return (
 )
 
 // Pattern 3: Available transitions for dynamic UI
+// (null means unrestricted, [] means terminal)
 const { availableTransitions } = useStateMachine()
 
 return (
   <div>
-    {availableTransitions.map(state => (
-      <StateButton key={state} to={state}>
-        Go to {state}
-      </StateButton>
-    ))}
+    {availableTransitions === null
+      ? <p>Any state is reachable</p>
+      : availableTransitions.map(state => (
+          <StateButton key={state} to={state}>
+            Go to {state}
+          </StateButton>
+        ))}
   </div>
 )`}</pre>
     </div>

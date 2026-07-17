@@ -1,5 +1,12 @@
 # Ygdrassil Remediation Implementation Plan
 
+> **STATUS: EXECUTED 2026-07-17.** All 14 tasks completed on `feat/remediation-2026-07`,
+> merged to `main` at `4ec38e8`, pushed, CI green (112 tests). One deviation: the tsup
+> DTS build required a dedicated `tsconfig.lib.json` (the root solution-style tsconfig
+> carries no `jsx` flag). Remaining release steps: `npm publish` (v2026.2.0) and
+> `npm run deploy` for the gh-pages demo. The deferred-items table at the bottom is
+> still the live backlog.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fix the verified P0/P1 findings from `plan/FINDINGS.GROK.md` and `plan/FINDINGS.CODEX.md` — URL/state desync, lifecycle parity, `availableTransitions` semantics, the `<state-query>` XSS, and npm packaging — without expanding the library's intentionally small scope.
