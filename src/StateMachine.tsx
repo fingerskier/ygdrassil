@@ -152,24 +152,24 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
   }, [])
 
   /* ---------- State transition handlers ---------- */
-  // Internal state transition (called by hash change handler)
-  const transitionToState = useCallback(
-    (next: string) => {
-      setCurrentState(prev => {
-        if (prev === next) return prev // no-op
-        const allowed = prev ? statesRef.current[prev]?.transition : undefined
-        if (allowed && !allowed.includes(next)) {
-          console.warn(`Transition from "${prev}" to "${next}" not allowed.`)
-          return prev
-        }
-        // Call state-level handlers
-        if (prev) statesRef.current[prev]?.onExit?.()
-        statesRef.current[next]?.onEnter?.()
-        // Call global handlers
-        if (prev) globalOnExit?.(prev)
-        globalOnEnter?.(next)
-        return next
-      })
+  // Validates, runs lifecycle hooks, and commits a transition.
+  // Returns false when the current state's transition list denies the move.
+  const applyTransition = useCallback(
+    (next: string): boolean => {
+      const prev = currentRef.current
+      if (prev === next) return true // no-op
+      const allowed = prev ? statesRef.current[prev]?.transition : undefined
+      if (allowed && !allowed.includes(next)) {
+        console.warn(`Transition from "${prev}" to "${next}" not allowed.`)
+        return false
+      }
+      if (prev) statesRef.current[prev]?.onExit?.()
+      statesRef.current[next]?.onEnter?.()
+      if (prev) globalOnExit?.(prev)
+      globalOnEnter?.(next)
+      currentRef.current = next
+      setCurrentState(next)
+      return true
     },
     [globalOnEnter, globalOnExit],
   )
@@ -294,8 +294,27 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     const handler = () => {
       const next = readParam()
       if (next) {
-        if (next !== currentRef.current) transitionToState(next)
-      } else {
+        if (next !== currentRef.current) {
+          const accepted = applyTransition(next)
+          if (!accepted) {
+            // URL claimed a forbidden state: repair our param back to the
+            // current state without adding a history entry or re-dispatching
+            // (re-dispatch could ping-pong between machines).
+            const prev = currentRef.current as string // denial implies a prior state
+            const search = window.location.hash.startsWith('#?')
+              ? window.location.hash.slice(2)
+              : ''
+            const params = new URLSearchParams(search)
+            params.set(machineStateParam, prev)
+            window.history.replaceState(null, '', `#?${params.toString()}`)
+          }
+        }
+      } else if (currentRef.current) {
+        // Param removed (close() or URL edit): run exit hooks, then clear.
+        const prev = currentRef.current
+        statesRef.current[prev]?.onExit?.()
+        globalOnExit?.(prev)
+        currentRef.current = undefined
         setCurrentState(undefined)
       }
       setQueryState(readQuery())
@@ -303,7 +322,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     handler()
     window.addEventListener('hashchange', handler)
     return () => window.removeEventListener('hashchange', handler)
-  }, [transitionToState, readParam, readQuery])
+  }, [applyTransition, readParam, readQuery, machineStateParam, globalOnExit])
 
 
   /* ---------- Context value ---------- */

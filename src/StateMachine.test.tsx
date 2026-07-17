@@ -516,6 +516,86 @@ describe('StateMachine', () => {
     })
   })
 
+  describe('URL repair on rejected navigation', () => {
+    it('repairs the URL when a hash navigation is rejected', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      render(
+        <StateMachine initial="page1" name="test">
+          <State name="page1" transition={['page2']}><div>Page 1</div></State>
+          <State name="page2"><div>Page 2</div></State>
+          <State name="page3"><div>Page 3</div></State>
+        </StateMachine>
+      )
+
+      await act(async () => {
+        setHash('#?yg-test=page3')
+      })
+
+      expect(screen.getByText('Page 1')).toBeInTheDocument()
+      expect(window.location.hash).toBe('#?yg-test=page1')
+      warn.mockRestore()
+    })
+
+    it('repair preserves other machines\' params and foreign query keys', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      render(
+        <StateMachine initial="page1" name="test">
+          <State name="page1" transition={['page2']}><div>Page 1</div></State>
+          <State name="page2"><div>Page 2</div></State>
+        </StateMachine>
+      )
+
+      await act(async () => {
+        setHash('#?yg-test=page9&yg-other=zzz&keep=1')
+      })
+
+      expect(window.location.hash).toContain('yg-test=page1')
+      expect(window.location.hash).toContain('yg-other=zzz')
+      expect(window.location.hash).toContain('keep=1')
+      warn.mockRestore()
+    })
+  })
+
+  describe('close lifecycle parity', () => {
+    it('runs state-level and global onExit when the machine param is removed', async () => {
+      const stateOnExit = vi.fn()
+      const globalOnExit = vi.fn()
+      const CloseButton = () => {
+        const { close } = useStateMachine()
+        return <button onClick={close}>Close</button>
+      }
+
+      render(
+        <StateMachine initial="page1" name="test" onExit={globalOnExit}>
+          <State name="page1" onExit={stateOnExit}><div>Page 1</div></State>
+          <CloseButton />
+        </StateMachine>
+      )
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('Close'))
+      })
+
+      expect(stateOnExit).toHaveBeenCalledTimes(1)
+      expect(globalOnExit).toHaveBeenCalledWith('page1')
+    })
+
+    it('runs onExit when the yg- param is removed by direct URL edit', async () => {
+      const stateOnExit = vi.fn()
+      render(
+        <StateMachine initial="page1" name="test">
+          <State name="page1" onExit={stateOnExit}><div>Page 1</div></State>
+        </StateMachine>
+      )
+
+      await act(async () => {
+        setHash('#?unrelated=1')
+      })
+
+      expect(stateOnExit).toHaveBeenCalledTimes(1)
+    })
+  })
+
   describe('query and setQuery', () => {
     it('reads query params from URL', () => {
       setHash('#?yg-test=page1&count=5&name=test')
