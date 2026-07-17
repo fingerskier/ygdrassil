@@ -12,7 +12,7 @@ import { DOCS } from '@/com/constants'
 
 export default function DocsMachine() {
   return <>
-    <h1>Ygdrassil Documentation</h1>
+    <h1>Documentation <code className='param-chip'>yg-docs</code></h1>
     <Controls />
 
     <State name={DOCS.ST[0]} transition={DOCS.overview}>

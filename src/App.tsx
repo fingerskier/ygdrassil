@@ -24,35 +24,34 @@ export default function App() {
   }, [])
 
   return <>
-    <div className='banner'>
-      <h1>
-        <img src={logo} alt='Ygdrassil logo' height="64" />
+    <header className='site-header'>
+      <a className='brand' href='https://github.com/fingerskier/ygdrassil'>
+        <img src={logo} alt='' height="28" />
         Ygdrassil
-        <img src={logo} alt='Ygdrassil logo' height="64" />
-      </h1>
-      <p>A basic, declarative React state machine library.</p>
-      <p>
+      </a>
+      <span className='tagline'>Declarative URL-hash state machines for React</span>
+      <nav className='site-links'>
         <a href='https://github.com/fingerskier/ygdrassil' target='_blank'>GitHub</a>
-        {' | '}
         <a href='https://www.npmjs.com/package/ygdrassil' target='_blank'>NPM</a>
-        {' | '}
-        <a href='/ygdrassil/vanilla_example.html' target='_blank'>Vanilla JS Example</a>
-      </p>
-    </div>
-    <a href='/'>Restart</a>
+        <a href='/ygdrassil/vanilla_example.html' target='_blank'>Vanilla demo</a>
+      </nav>
+    </header>
 
-    <ExternalButton className='badge' to='overview' machine='docs'>Documentation</ExternalButton>
-    <ExternalButton className='badge' to='one' machine='app'>Start machine #1</ExternalButton>
+    <div className='toolbar'>
+      <a href='/'>Restart</a>
+      <ExternalButton to='overview' machine='docs'>Open documentation</ExternalButton>
+      <ExternalButton to='one' machine='app'>Start machine #1</ExternalButton>
+    </div>
 
     <StateMachine
       name='app'
-      className='state machine one'
+      className='machine one'
       onEnter={logNav('enter', 'app')}
       onExit={logNav('exit', 'app')}
       onTransitionDenied={(from, to) => console.warn('denied', from, to)}
     >
-      <h1>First State-Machine</h1>
-        <ExternalButton className='badge'
+      <h1>First machine <code className='param-chip'>yg-app</code></h1>
+        <ExternalButton
           to='alpha' machine='aux'
           data={{alpha: 0, beta: 'nada', gamma: 0, delta: 0}}
         >Start machine #2</ExternalButton>
@@ -74,26 +73,27 @@ export default function App() {
     <StateMachine
       name='aux'
       initial='alpha'
+      className='machine two'
       onEnter={logNav('enter', 'aux')}
       onExit={logNav('exit', 'aux')}
     >
         <SecondMachine />
     </StateMachine>
 
-    <StateMachine name='docs' initial='overview'>
+    <StateMachine name='docs' initial='overview' className='machine docs'>
         <DocsMachine />
     </StateMachine>
 
     {/* Navigation History - demonstrates global onEnter/onExit handlers */}
     {navHistory.length > 0 && (
       <div className='nav-history'>
-        <h3>Navigation History (Global Handlers)</h3>
+        <h3>Navigation history</h3>
         <ul>
           {navHistory.map((entry, i) => (
-            <li key={i} className={entry.type}>
+            <li key={i} className={entry.type} data-machine={entry.machine}>
               <span className='time'>{entry.time}</span>
               <span className='type'>{entry.type === 'enter' ? 'ENTER' : 'EXIT'}</span>
-              <span className='machine'>{entry.machine}</span>
+              <span className='machine-name'>{entry.machine}</span>
               <span className='state'>{entry.state}</span>
             </li>
           ))}

@@ -9,7 +9,7 @@ import { M2 } from '@/com/constants'
 
 export default function SecondMachine() {
   return <>
-    <h1>Second State-Machine</h1>
+    <h1>Second machine <code className='param-chip'>yg-aux</code></h1>
     <Controls2 />
 
     <State name={M2.ST[0]} transition={M2.alpha}>

@@ -77,10 +77,6 @@ export const State: React.FC<StateProps> = ({ name, onEnter, onExit, transition,
     return () => {
       unregisterState(name)
     }
-  // children is intentionally excluded from the dependency array to avoid
-  // infinite re-registration loops since React recreates elements on every
-  // render. The definition is updated only when relevant props change.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, onEnter, onExit, transition, registerState, unregisterState])
   
   // Only render children when this state is active
