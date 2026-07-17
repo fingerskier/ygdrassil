@@ -22,7 +22,9 @@
     "vanilla/README.md"
   ],
   "scripts": {
+    "predeploy": "node scripts/sync-public.mjs",
     "deploy": "npm run build&&gh-pages -d dist",
+    "sync:public": "node scripts/sync-public.mjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "build:lib": "tsup",

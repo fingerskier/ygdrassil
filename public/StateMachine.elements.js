@@ -30,6 +30,7 @@ class StateMachineElement extends HTMLElement {
     super()
     this._machine = null
     this._states = new Map()
+    this._defs = new Map() // name -> last-seen transition attribute string
     this._initialized = false
   }
 
@@ -100,7 +101,12 @@ class StateMachineElement extends HTMLElement {
     this._observer = new MutationObserver(() => {
       this._discoverStates()
     })
-    this._observer.observe(this, { childList: true, subtree: true })
+    this._observer.observe(this, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['name', 'transition'],
+    })
 
     this._initialized = true
     this._updateActiveStates()
@@ -115,44 +121,62 @@ class StateMachineElement extends HTMLElement {
     }
     this._initialized = false
     this._states.clear()
+    this._defs.clear()
     this._initialize()
   }
 
   _discoverStates() {
     const stateElements = this.querySelectorAll('state-def')
+    const present = new Set()
 
     stateElements.forEach(stateEl => {
       const stateName = stateEl.getAttribute('name')
       if (!stateName) return
+      present.add(stateName)
 
-      // Register state with machine if not already registered
-      if (!this._states.has(stateName)) {
-        const transitionStr = stateEl.getAttribute('transition')
-        const transition = transitionStr ? transitionStr.split(',').map(s => s.trim()) : undefined
+      const transitionStr = stateEl.getAttribute('transition') || ''
+      const known = this._states.has(stateName)
+      const changed = known && this._defs.get(stateName) !== transitionStr
+      if (known && !changed) return
 
-        this._machine.registerState(stateName, {
-          onEnter: () => {
-            stateEl.dispatchEvent(new CustomEvent('enter', { bubbles: true }))
-            // Call custom onenter callback if defined
-            const onEnterAttr = stateEl.getAttribute('onenter')
-            if (onEnterAttr && window[onEnterAttr]) {
-              window[onEnterAttr]()
-            }
-          },
-          onExit: () => {
-            stateEl.dispatchEvent(new CustomEvent('exit', { bubbles: true }))
-            // Call custom onexit callback if defined
-            const onExitAttr = stateEl.getAttribute('onexit')
-            if (onExitAttr && window[onExitAttr]) {
-              window[onExitAttr]()
-            }
-          },
-          transition
-        })
+      const transition = transitionStr
+        ? transitionStr.split(',').map(s => s.trim())
+        : undefined
 
-        this._states.set(stateName, stateEl)
-      }
+      // registerState is an idempotent overwrite, so re-registering on a
+      // definition change replaces the old transition list and callbacks.
+      this._machine.registerState(stateName, {
+        onEnter: () => {
+          stateEl.dispatchEvent(new CustomEvent('enter', { bubbles: true }))
+          // Call custom onenter callback if defined
+          const onEnterAttr = stateEl.getAttribute('onenter')
+          if (onEnterAttr && window[onEnterAttr]) {
+            window[onEnterAttr]()
+          }
+        },
+        onExit: () => {
+          stateEl.dispatchEvent(new CustomEvent('exit', { bubbles: true }))
+          // Call custom onexit callback if defined
+          const onExitAttr = stateEl.getAttribute('onexit')
+          if (onExitAttr && window[onExitAttr]) {
+            window[onExitAttr]()
+          }
+        },
+        transition
+      })
+
+      this._states.set(stateName, stateEl)
+      this._defs.set(stateName, transitionStr)
     })
+
+    // Unregister states whose <state-def> is gone from the DOM
+    for (const name of Array.from(this._states.keys())) {
+      if (!present.has(name)) {
+        this._machine.unregisterState(name)
+        this._states.delete(name)
+        this._defs.delete(name)
+      }
+    }
   }
 
   _updateActiveStates() {
@@ -358,8 +382,10 @@ class StateNavElement extends HTMLElement {
   _updateActiveClass(to) {
     if (this._machine.is(to)) {
       this._navElement.classList.add('active')
+      this._navElement.setAttribute('aria-current', 'page')
     } else {
       this._navElement.classList.remove('active')
+      this._navElement.removeAttribute('aria-current')
     }
   }
 
@@ -437,17 +463,31 @@ class StateQueryElement extends HTMLElement {
     const query = this._machine.getQuery()
 
     // Filter out yg- parameters
-    const filteredQuery = Object.fromEntries(
-      Object.entries(query).filter(([key]) => !key.startsWith('yg-'))
-    )
+    const entries = Object.entries(query).filter(([key]) => !key.startsWith('yg-'))
+
+    // Build DOM with textContent only — query strings are user-controlled
+    // via the URL and must never be interpolated into HTML.
+    this.textContent = ''
 
     if (format === 'json') {
-      this.innerHTML = `<pre>${JSON.stringify(filteredQuery, null, 2)}</pre>`
+      const pre = document.createElement('pre')
+      pre.textContent = JSON.stringify(Object.fromEntries(entries), null, 2)
+      this.appendChild(pre)
+    } else if (entries.length === 0) {
+      const p = document.createElement('p')
+      p.textContent = 'No query parameters'
+      this.appendChild(p)
     } else {
-      const items = Object.entries(filteredQuery)
-        .map(([key, value]) => `<li><strong>${key}:</strong> ${value}</li>`)
-        .join('')
-      this.innerHTML = items ? `<ul>${items}</ul>` : '<p>No query parameters</p>'
+      const ul = document.createElement('ul')
+      for (const [key, value] of entries) {
+        const li = document.createElement('li')
+        const strong = document.createElement('strong')
+        strong.textContent = `${key}:`
+        li.appendChild(strong)
+        li.appendChild(document.createTextNode(` ${value}`))
+        ul.appendChild(li)
+      }
+      this.appendChild(ul)
     }
   }
 }

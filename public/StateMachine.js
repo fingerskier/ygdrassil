@@ -28,6 +28,7 @@ export class StateMachine {
    * @param {Object} [config.states={}] - State definitions
    * @param {Function} [config.onEnter] - Global callback fired when entering any state
    * @param {Function} [config.onExit] - Global callback fired when exiting any state
+   * @param {Function} [config.onTransitionDenied] - Called with (from, to) when a transition is denied
    */
   constructor(config = {}) {
     this.name = config.name || '#'
@@ -36,7 +37,9 @@ export class StateMachine {
     this.currentState = null
     this.globalOnEnter = config.onEnter
     this.globalOnExit = config.onExit
+    this.onTransitionDenied = config.onTransitionDenied
     this._listeners = []
+    this._initialStateEnterPending = false
 
     // Register states from config
     if (config.states) {
@@ -59,17 +62,20 @@ export class StateMachine {
   _init(initial) {
     // Read current state from URL
     const urlState = this._readParam()
+    const target = urlState || initial
 
-    if (urlState) {
-      this.currentState = urlState
-    } else if (initial) {
-      // Set initial state in URL
-      this.currentState = initial
-      this._writeParam(initial)
-      // Call global onEnter for initial state
-      if (this.globalOnEnter) {
-        this.globalOnEnter(initial)
+    if (target) {
+      this.currentState = target
+      if (!urlState) this._writeParam(target)
+      const def = this.states[target]
+      if (def?.onEnter) {
+        def.onEnter()
+      } else {
+        // Definition not registered yet (e.g. web-component discovery runs
+        // after construction) — back-fill in registerState.
+        this._initialStateEnterPending = true
       }
+      if (this.globalOnEnter) this.globalOnEnter(target)
     }
 
     // Listen for hash changes
@@ -123,6 +129,20 @@ export class StateMachine {
   }
 
   /**
+   * Rewrite this machine's param back to a state without adding a history
+   * entry and without re-dispatching hashchange (avoids loops between machines).
+   * @private
+   */
+  _repairParam(state) {
+    const currentHash = window.location.hash.startsWith('#?')
+      ? window.location.hash.slice(2)
+      : ''
+    const params = new URLSearchParams(currentHash)
+    params.set(this.param, state)
+    window.history.replaceState(null, '', `#?${params.toString()}`)
+  }
+
+  /**
    * Read all query parameters from URL hash
    */
   getQuery() {
@@ -170,7 +190,8 @@ export class StateMachine {
     })
 
     const newHash = `#?${params.toString()}`
-    window.location.hash = newHash
+    window.history.pushState(null, '', newHash)
+    window.dispatchEvent(new HashChangeEvent('hashchange'))
   }
 
   /**
@@ -193,7 +214,9 @@ export class StateMachine {
     }
 
     if (nextState === this.currentState) {
-      return // No change
+      // State unchanged — but the query may have changed.
+      this._notifyListeners()
+      return
     }
 
     this._transitionToState(nextState)
@@ -211,8 +234,14 @@ export class StateMachine {
     // Check if transition is allowed
     if (prev?.transition && !prev.transition.includes(nextState)) {
       console.warn(`Transition from "${prevState}" to "${nextState}" not allowed.`)
-      return
+      if (this.onTransitionDenied) this.onTransitionDenied(prevState, nextState)
+      // The URL already shows the forbidden state — repair it.
+      if (prevState) this._repairParam(prevState)
+      return false
     }
+
+    // A committed transition supersedes any pending initial-enter back-fill.
+    this._initialStateEnterPending = false
 
     // Execute state-level handlers
     if (prev?.onExit) prev.onExit()
@@ -224,6 +253,7 @@ export class StateMachine {
 
     this.currentState = nextState
     this._notifyListeners()
+    return true
   }
 
   /**
@@ -239,6 +269,10 @@ export class StateMachine {
       onEnter: definition.onEnter,
       onExit: definition.onExit,
       transition: definition.transition
+    }
+    if (this._initialStateEnterPending && name === this.currentState) {
+      this._initialStateEnterPending = false
+      if (this.states[name].onEnter) this.states[name].onEnter()
     }
     this._notifyListeners()
   }
@@ -257,20 +291,23 @@ export class StateMachine {
    * @param {string} nextState - Target state name
    * @param {Object} [data] - Additional query parameters to set
    * @param {boolean} [replace=false] - If true, replace all non-yg- query params
+   * @returns {boolean} False when the transition is denied
    */
   gotoState(nextState, data = null, replace = false) {
     if (this.currentState === nextState && !data) {
-      return // No-op if same state and no data changes
+      return true // No-op if same state and no data changes
     }
 
     const current = this.states[this.currentState]
     if (current?.transition && !current.transition.includes(nextState)) {
       console.warn(`Transition from "${this.currentState}" to "${nextState}" not allowed.`)
-      return
+      if (this.onTransitionDenied) this.onTransitionDenied(this.currentState, nextState)
+      return false
     }
 
     this._writeParam(nextState, data, replace)
     window.dispatchEvent(new HashChangeEvent('hashchange'))
+    return true
   }
 
   /**
@@ -298,12 +335,13 @@ export class StateMachine {
   }
 
   /**
-   * Get available transitions from current state
-   * @returns {string[]} Array of allowed state names
+   * Get available transitions from current state.
+   * @returns {string[] | null} Allowed next states; null means unrestricted
+   *   (any state), an empty array means terminal (no transitions allowed).
    */
   getAvailableTransitions() {
-    if (!this.currentState) return []
-    return this.states[this.currentState]?.transition || []
+    if (!this.currentState) return null
+    return this.states[this.currentState]?.transition ?? null
   }
 
   /**
@@ -360,6 +398,9 @@ export function createStateButton(machine, targetState, options = {}) {
     const classes = [options.className || '']
     if (machine.is(targetState)) {
       classes.push('active')
+      button.setAttribute('aria-current', 'page')
+    } else {
+      button.removeAttribute('aria-current')
     }
     button.className = classes.filter(Boolean).join(' ')
   }
@@ -393,6 +434,9 @@ export function createStateLink(machine, targetState, options = {}) {
     const classes = [options.className || '']
     if (machine.is(targetState)) {
       classes.push('active')
+      link.setAttribute('aria-current', 'page')
+    } else {
+      link.removeAttribute('aria-current')
     }
     link.className = classes.filter(Boolean).join(' ')
 
