@@ -141,10 +141,19 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
   /** Registry of all states */
   const statesRef = useRef<Record<string, StateDefinition>>({})
 
+  const initialEnterFiredRef = useRef(false)
+  const fireInitialEnter = useCallback((name: string) => {
+    if (initialEnterFiredRef.current) return
+    initialEnterFiredRef.current = true
+    statesRef.current[name]?.onEnter?.()
+    globalOnEnter?.(name)
+  }, [globalOnEnter])
+
   const registerState = useCallback((name: string, definition: StateDefinition) => {
     statesRef.current[name] = definition
     setVersion(v => v + 1)
-  }, [])
+    if (name === currentRef.current) fireInitialEnter(name)
+  }, [fireInitialEnter])
 
   const unregisterState = useCallback((name: string) => {
     delete statesRef.current[name]
@@ -167,6 +176,7 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
       statesRef.current[next]?.onEnter?.()
       if (prev) globalOnExit?.(prev)
       globalOnEnter?.(next)
+      initialEnterFiredRef.current = true
       currentRef.current = next
       setCurrentState(next)
       return true
@@ -278,15 +288,12 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
     }
   }, [initial, readParam, machineStateParam])
 
-  /* ---------- Call global onEnter on initial mount ---------- */
-  const initialOnEnterCalledRef = useRef(false)
+  /* ---------- Initial enter (state-level + global), fired exactly once ---------- */
   useEffect(() => {
-    if (initialOnEnterCalledRef.current) return
-    if (currentState) {
-      initialOnEnterCalledRef.current = true
-      globalOnEnter?.(currentState)
-    }
-  }, [currentState, globalOnEnter])
+    // Fallback for an active state that has no <State> child (undeclared name):
+    // children's registration effects have already run by the time this fires.
+    if (currentState) fireInitialEnter(currentState)
+  }, [currentState, fireInitialEnter])
 
 
   /* ---------- Watch for external hash changes ---------- */

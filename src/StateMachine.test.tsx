@@ -516,6 +516,51 @@ describe('StateMachine', () => {
     })
   })
 
+  describe('initial state-level onEnter', () => {
+    it('calls state-level onEnter for the initial state, before global onEnter', async () => {
+      const order: string[] = []
+      render(
+        <StateMachine initial="page1" name="test" onEnter={(s) => order.push(`global:${s}`)}>
+          <State name="page1" onEnter={() => order.push('state:page1')}><div>Page 1</div></State>
+        </StateMachine>
+      )
+
+      await waitFor(() => expect(order).toEqual(['state:page1', 'global:page1']))
+    })
+
+    it('calls state-level onEnter for a deep-linked state', async () => {
+      setHash('#?yg-test=page2')
+      const onEnter = vi.fn()
+      render(
+        <StateMachine initial="page1" name="test">
+          <State name="page1"><div>Page 1</div></State>
+          <State name="page2" onEnter={onEnter}><div>Page 2</div></State>
+        </StateMachine>
+      )
+
+      await waitFor(() => expect(onEnter).toHaveBeenCalledTimes(1))
+    })
+
+    it('does not double-fire when transitioning after mount', async () => {
+      const onEnter = vi.fn()
+      const Nav = () => {
+        const { gotoState } = useStateMachine()
+        return <button onClick={() => gotoState('page2')}>Go</button>
+      }
+      render(
+        <StateMachine initial="page1" name="test">
+          <State name="page1" onEnter={onEnter}><div>Page 1</div></State>
+          <State name="page2"><div>Page 2</div></State>
+          <Nav />
+        </StateMachine>
+      )
+      await waitFor(() => expect(onEnter).toHaveBeenCalledTimes(1))
+
+      await act(async () => { fireEvent.click(screen.getByText('Go')) })
+      expect(onEnter).toHaveBeenCalledTimes(1) // still once — page1 was exited, not re-entered
+    })
+  })
+
   describe('URL repair on rejected navigation', () => {
     it('repairs the URL when a hash navigation is rejected', async () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})

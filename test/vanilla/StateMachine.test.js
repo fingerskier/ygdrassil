@@ -72,6 +72,38 @@ describe('vanilla StateMachine: baseline', () => {
     expect(m.getQuery()['yg-app']).toBe('home')
   })
 
+  it('fires state-level then global onEnter for a configured initial state', () => {
+    const order = []
+    makeMachine({
+      name: 'app',
+      initial: 'home',
+      onEnter: (s) => order.push(`global:${s}`),
+      states: { home: { onEnter: () => order.push('state:home') } },
+    })
+    expect(order).toEqual(['state:home', 'global:home'])
+  })
+
+  it('fires hooks when adopting an existing URL state', () => {
+    window.location.hash = '#?yg-app=about'
+    const order = []
+    makeMachine({
+      name: 'app',
+      initial: 'home',
+      onEnter: (s) => order.push(`global:${s}`),
+      states: { about: { onEnter: () => order.push('state:about') } },
+    })
+    expect(order).toEqual(['state:about', 'global:about'])
+  })
+
+  it('back-fills state-level onEnter when the active state registers late', () => {
+    const m = makeMachine({ name: 'app', initial: 'home' }) // no states yet (elements pattern)
+    const onEnter = vi.fn()
+    m.registerState('home', { onEnter })
+    expect(onEnter).toHaveBeenCalledTimes(1)
+    m.registerState('home', { onEnter }) // idempotent — re-registering must not re-fire
+    expect(onEnter).toHaveBeenCalledTimes(1)
+  })
+
   it('repairs the URL when a hash-driven transition is rejected', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const m = makeMachine({ name: 'app', initial: 'a', states: { a: { transition: ['b'] }, b: {}, c: {} } })

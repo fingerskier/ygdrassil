@@ -37,6 +37,7 @@ export class StateMachine {
     this.globalOnEnter = config.onEnter
     this.globalOnExit = config.onExit
     this._listeners = []
+    this._initialStateEnterPending = false
 
     // Register states from config
     if (config.states) {
@@ -59,17 +60,20 @@ export class StateMachine {
   _init(initial) {
     // Read current state from URL
     const urlState = this._readParam()
+    const target = urlState || initial
 
-    if (urlState) {
-      this.currentState = urlState
-    } else if (initial) {
-      // Set initial state in URL
-      this.currentState = initial
-      this._writeParam(initial)
-      // Call global onEnter for initial state
-      if (this.globalOnEnter) {
-        this.globalOnEnter(initial)
+    if (target) {
+      this.currentState = target
+      if (!urlState) this._writeParam(target)
+      const def = this.states[target]
+      if (def?.onEnter) {
+        def.onEnter()
+      } else {
+        // Definition not registered yet (e.g. web-component discovery runs
+        // after construction) — back-fill in registerState.
+        this._initialStateEnterPending = true
       }
+      if (this.globalOnEnter) this.globalOnEnter(target)
     }
 
     // Listen for hash changes
@@ -230,6 +234,9 @@ export class StateMachine {
       return false
     }
 
+    // A committed transition supersedes any pending initial-enter back-fill.
+    this._initialStateEnterPending = false
+
     // Execute state-level handlers
     if (prev?.onExit) prev.onExit()
     if (next?.onEnter) next.onEnter()
@@ -256,6 +263,10 @@ export class StateMachine {
       onEnter: definition.onEnter,
       onExit: definition.onExit,
       transition: definition.transition
+    }
+    if (this._initialStateEnterPending && name === this.currentState) {
+      this._initialStateEnterPending = false
+      if (this.states[name].onEnter) this.states[name].onEnter()
     }
     this._notifyListeners()
   }
