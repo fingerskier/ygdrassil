@@ -123,6 +123,20 @@ export class StateMachine {
   }
 
   /**
+   * Rewrite this machine's param back to a state without adding a history
+   * entry and without re-dispatching hashchange (avoids loops between machines).
+   * @private
+   */
+  _repairParam(state) {
+    const currentHash = window.location.hash.startsWith('#?')
+      ? window.location.hash.slice(2)
+      : ''
+    const params = new URLSearchParams(currentHash)
+    params.set(this.param, state)
+    window.history.replaceState(null, '', `#?${params.toString()}`)
+  }
+
+  /**
    * Read all query parameters from URL hash
    */
   getQuery() {
@@ -211,7 +225,9 @@ export class StateMachine {
     // Check if transition is allowed
     if (prev?.transition && !prev.transition.includes(nextState)) {
       console.warn(`Transition from "${prevState}" to "${nextState}" not allowed.`)
-      return
+      // The URL already shows the forbidden state — repair it.
+      if (prevState) this._repairParam(prevState)
+      return false
     }
 
     // Execute state-level handlers
@@ -224,6 +240,7 @@ export class StateMachine {
 
     this.currentState = nextState
     this._notifyListeners()
+    return true
   }
 
   /**

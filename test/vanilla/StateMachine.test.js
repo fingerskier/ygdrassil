@@ -72,6 +72,20 @@ describe('vanilla StateMachine: baseline', () => {
     expect(m.getQuery()['yg-app']).toBe('home')
   })
 
+  it('repairs the URL when a hash-driven transition is rejected', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const m = makeMachine({ name: 'app', initial: 'a', states: { a: { transition: ['b'] }, b: {}, c: {} } })
+
+    // Simulate address-bar edit / back-button: URL changes first, then the event fires.
+    window.location.hash = '#?yg-app=c&keep=1'
+    window.dispatchEvent(new HashChangeEvent('hashchange'))
+
+    expect(m.currentState).toBe('a')
+    expect(window.location.hash).toContain('yg-app=a')
+    expect(window.location.hash).toContain('keep=1')
+    warn.mockRestore()
+  })
+
   it('subscribe notifies on state change and unsubscribe stops it', () => {
     const m = makeMachine({ name: 'app', initial: 'home', states: { home: {}, about: {} } })
     const listener = vi.fn()
