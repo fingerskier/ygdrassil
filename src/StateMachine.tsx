@@ -12,8 +12,6 @@ import React, {
 } from 'react'
 
 export interface StateDefinition {
-  /** JSX representing the state's UI (captured from the `<State>` child) */
-  element: ReactElement
   onEnter?: () => void
   onExit?: () => void
   transition?: string[]
@@ -70,7 +68,6 @@ export const State: React.FC<StateProps> = ({ name, onEnter, onExit, transition,
 
   useEffect(() => {
     const definition: StateDefinition = {
-      element: children || <></>,
       onEnter,
       onExit,
       transition

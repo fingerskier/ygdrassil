@@ -136,12 +136,15 @@ Defines a state within a state machine.
 **Attributes:**
 - `name` - State name (required)
 - `transition` - Comma-separated list of allowed next states
-- `onenter` - Name of global function to call on enter
-- `onexit` - Name of global function to call on exit
+- `onenter` - Name of global function to call on enter (legacy — prefer the `enter`/`exit`/`state-*` CustomEvents)
+- `onexit` - Name of global function to call on exit (legacy — prefer the CustomEvents)
 
 **Events:**
 - `enter` - Fired when this state is entered
 - `exit` - Fired when this state is exited
+
+Definitions are live: removing a `<state-def>` unregisters its state, and
+editing its `transition` attribute updates the machine's registry.
 
 **Example:**
 ```html
@@ -275,6 +278,14 @@ new StateMachine(config)
 - `states` (object, optional): Object mapping state names to definitions
 - `onEnter` (function, optional): Global callback fired when entering any state
 - `onExit` (function, optional): Global callback fired when exiting any state
+- `onTransitionDenied` (function, optional): Called with `(from, to)` when a transition is denied by the current state's `transition` list
+
+**URL semantics:** the transition table is authoritative. If the URL is edited
+(back/forward, paste, link) to a state the current state's `transition` list
+forbids, the machine stays put and repairs its `yg-` param back to the current
+state via `history.replaceState` (no new history entry). Lifecycle order on
+every entry, including startup and deep links: state-level `onExit` →
+state-level `onEnter` → global `onExit` → global `onEnter`.
 
 **State Definition:**
 
@@ -290,7 +301,8 @@ new StateMachine(config)
 
 **`gotoState(stateName, data?, replace?)`**
 
-Navigate to a different state.
+Navigate to a different state. Returns `false` when the transition is denied,
+`true` otherwise.
 
 - `stateName` (string): Target state name
 - `data` (object, optional): Query parameters to set
@@ -342,11 +354,13 @@ if (machine.is('home')) {
 
 **`getAvailableTransitions()`**
 
-Get array of allowed transitions from current state.
+Get allowed transitions from the current state.
 
 ```javascript
 const allowed = machine.getAvailableTransitions()
-// Returns: ['about', 'contact'] or [] if any transition allowed
+// Returns: ['about', 'contact'] for a restricted state,
+//          null when unrestricted (any state allowed),
+//          [] for a terminal state (no transitions allowed)
 ```
 
 **`getQuery()`**
@@ -360,7 +374,9 @@ const params = machine.getQuery()
 
 **`setQuery(obj, replace?)`**
 
-Update query parameters in the URL.
+Update query parameters in the URL. Reads the live hash, writes via
+`history.pushState`, and dispatches `hashchange` synchronously — subscribers
+are notified immediately.
 
 - `obj` (object): Key-value pairs to set (null values delete the param)
 - `replace` (boolean, optional): If true, replace all non-yg- params

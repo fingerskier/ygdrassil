@@ -25,6 +25,24 @@ Available in two flavors:
 - 🔄 **Multiple Machines**: Run multiple independent state machines simultaneously
 - 📦 **Small & Fast**: Minimal footprint
 
+### URL & transition semantics
+
+- The transition table is authoritative. If the URL is edited (back/forward,
+  paste, external link) to a state the current state's `transition` list does
+  not allow, the machine stays put and **repairs the URL** back to the current
+  state with `history.replaceState` (no new history entry).
+- `ExternalButton` / `ExternalLink` write the URL directly and do not consult
+  the target machine's transition table — the target machine validates (and
+  repairs) on receipt.
+- Lifecycle order on every entry, including the initial/deep-linked state:
+  state-level `onExit` → state-level `onEnter` → global `onExit` → global `onEnter`.
+- Closing a machine (or removing its `yg-` param by hand) runs state-level and
+  global `onExit`.
+- Query values that look numeric are coerced to numbers (`"5"` → `5`). Beware:
+  `"001"` → `1` and very large IDs lose precision — pass such values as
+  strings with a non-numeric prefix, or read them from `window.location.hash`
+  directly.
+
 ---
 
 ## React Version
@@ -34,6 +52,8 @@ Available in two flavors:
 ```bash
 npm install ygdrassil
 ```
+
+React 18 or 19 is required as a peer dependency.
 
 ```jsx
 import { StateMachine, State, useStateMachine } from 'ygdrassil'
@@ -45,6 +65,8 @@ import { StateMachine, State, useStateMachine } from 'ygdrassil'
 - `name` - Identifies the machine; appears in URL as `yg-<name>`
 - `initial` - Initial state to render (optional)
 - `className` - Wraps children in a `<div>` with these classes (optional)
+- `onEnter(state)` / `onExit(state)` - Global hooks fired on every state change (optional)
+- `onTransitionDenied(from, to)` - Called when a transition is denied by the current state's `transition` list (optional)
 
 **`<State>` Component**
 - `onEnter` - Function called when entering the state (optional)
@@ -56,14 +78,14 @@ import { StateMachine, State, useStateMachine } from 'ygdrassil'
 Returns an object with:
 - `currentState` - String of the current state's name
 - `query` - Object mirroring URL query-string values
-- `gotoState(name)` - Navigate to a different state
+- `gotoState(name, data?, replace?)` - Navigate to a different state; returns `false` when the transition is denied
 - `close()` - Unload the state machine and URL params
 - `is(name)` - Check if current state matches given name
-- `availableTransitions` - Array of allowed transitions from current state
+- `availableTransitions` - `string[] | null`; `null` = unrestricted (any state), `[]` = terminal (no transitions allowed)
 - `setQuery(obj, replace?)` - Update query string
   - `obj` - Key-value pairs to set
-  - `replace` - If true, replaces entire query string
-- `registerState(name, transition, onEnter, onExit)` - Dynamically register a state
+  - `replace` - If true, clears all non-`yg-` params first
+- `registerState(name, definition)` - Dynamically register a state; `definition` is `{ onEnter?, onExit?, transition? }`
 - `unregisterState(name)` - Remove a state
 - `param` - URL parameter name (e.g., `yg-demo`)
 
@@ -79,7 +101,7 @@ Returns an object with:
 ### React Example
 
 ```jsx
-import { StateMachine, State, useStateMachine } from 'ygdrassil'
+import { StateMachine, State, StateButton } from 'ygdrassil'
 
 function App() {
   return (
@@ -98,7 +120,6 @@ function App() {
 }
 
 function Navigation() {
-  const { StateButton } = useStateMachine()
   return (
     <nav>
       <StateButton to="home">Home</StateButton>

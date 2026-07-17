@@ -24,8 +24,8 @@ export default function HookDoc() {
           </tr>
           <tr>
             <td>gotoState</td>
-            <td>(name: string) =&gt; void</td>
-            <td>Navigate to a specific state</td>
+            <td>(name, data?, replace?) =&gt; boolean</td>
+            <td>Navigate to a state; returns false when denied. Optional data merges query params; replace clears non-yg params first</td>
           </tr>
           <tr>
             <td>close</td>

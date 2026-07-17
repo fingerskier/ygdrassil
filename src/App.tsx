@@ -49,6 +49,7 @@ export default function App() {
       className='state machine one'
       onEnter={logNav('enter', 'app')}
       onExit={logNav('exit', 'app')}
+      onTransitionDenied={(from, to) => console.warn('denied', from, to)}
     >
       <h1>First State-Machine</h1>
         <ExternalButton className='badge'
@@ -57,15 +58,15 @@ export default function App() {
         >Start machine #2</ExternalButton>
         <Controls1 />
 
-        <State name={M1.ST[0]}>
+        <State name={M1.ST[0]} transition={M1.one}>
           <One />
         </State>
 
-        <State name={M1.ST[1]}>
+        <State name={M1.ST[1]} transition={M1.two}>
           <Two />
         </State>
 
-        <State name={M1.ST[2]}>
+        <State name={M1.ST[2]} transition={M1.three}>
           <Three />
         </State>
     </StateMachine>
