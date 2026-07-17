@@ -1,34 +1,46 @@
 {
   "name": "ygdrassil",
-  "version": "2026.1.6",
+  "version": "2026.2.0",
   "type": "module",
-  "main": "./src/StateMachine.tsx",
-  "types": "./src/StateMachine.tsx",
+  "main": "./dist-lib/StateMachine.js",
+  "types": "./dist-lib/StateMachine.d.ts",
   "exports": {
-    ".": "./src/StateMachine.tsx",
+    ".": {
+      "types": "./dist-lib/StateMachine.d.ts",
+      "import": "./dist-lib/StateMachine.js"
+    },
     "./vanilla": "./vanilla/StateMachine.js",
     "./vanilla/elements": "./vanilla/StateMachine.elements.js"
   },
+  "sideEffects": [
+    "./vanilla/StateMachine.elements.js"
+  ],
   "files": [
-    "src/StateMachine.tsx",
-    "vanilla/"
+    "dist-lib/",
+    "vanilla/StateMachine.js",
+    "vanilla/StateMachine.elements.js",
+    "vanilla/README.md"
   ],
   "scripts": {
     "deploy": "npm run build&&gh-pages -d dist",
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:lib": "tsup",
+    "prepublishOnly": "npm run test:run && npm run build:lib",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
-  "dependencies": {
-    "gh-pages": "^6.3.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
+    "gh-pages": "^6.3.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "@eslint/js": "^9.25.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
@@ -42,6 +54,7 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "jsdom": "^27.2.0",
+    "tsup": "^8.5.1",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.30.1",
     "vite": "^6.3.5",
