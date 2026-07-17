@@ -1,6 +1,6 @@
 {
   "name": "ygdrassil",
-  "version": "2026.2.0",
+  "version": "2026.7.13",
   "description": "Lightweight state machine that syncs state with the URL hash for bookmarkable app states. React components/hooks plus a zero-dependency vanilla JS twin with Web Components.",
   "keywords": [
     "state-machine",
