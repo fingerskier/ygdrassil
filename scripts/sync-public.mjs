@@ -1,5 +1,5 @@
 // vanilla/ is the canonical source for the StateMachine runtime files.
-// public/ carries deploy-time copies for the gh-pages demo; this script
+// public/ carries copies for the Vite demo (GitHub Pages); this script
 // keeps them in sync (default) or verifies they match (--check).
 import { copyFileSync, readFileSync } from 'node:fs'
 

@@ -42,8 +42,6 @@
     "vanilla/README.md"
   ],
   "scripts": {
-    "predeploy": "node scripts/sync-public.mjs",
-    "deploy": "npm run build&&gh-pages -d dist",
     "sync:public": "node scripts/sync-public.mjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -60,9 +58,6 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
-    "gh-pages": "^6.3.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
     "@eslint/js": "^9.25.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
@@ -76,6 +71,8 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "jsdom": "^27.2.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "tsup": "^8.5.1",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.30.1",
