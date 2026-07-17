@@ -255,26 +255,26 @@ export const StateMachine: React.FC<StateMachineProps> = ({ initial, children, n
       obj: Record<string, string | number | null | undefined>,
       replace = false,
     ) => {
-      setQueryState(prev => {
-        const base = replace
-          ? Object.fromEntries(
-              Object.entries(prev).filter(([k]) => k.startsWith('yg-')),
-            )
-          : { ...prev }
+      // Read the LIVE hash (not React state) so interleaved writes from other
+      // machines are never clobbered.
+      const currentHash = window.location.hash.startsWith('#?')
+        ? window.location.hash.slice(2)
+        : ''
+      const params = new URLSearchParams(currentHash)
 
-        for (const [k, v] of Object.entries(obj)) {
-          if (v == null) delete base[k]
-          else base[k] = v
+      if (replace) {
+        for (const key of Array.from(params.keys())) {
+          if (!key.startsWith('yg-')) params.delete(key)
         }
+      }
 
-        // Convert to strings for URL
-        const urlParams = Object.fromEntries(
-          Object.entries(base).map(([k, v]) => [k, String(v)])
-        )
-        const str = new URLSearchParams(urlParams).toString()
-        window.location.hash = `?${str}`
-        return base
-      })
+      for (const [k, v] of Object.entries(obj)) {
+        if (v == null) params.delete(k)
+        else params.set(k, String(v))
+      }
+
+      window.history.pushState(null, '', `#?${params.toString()}`)
+      window.dispatchEvent(new HashChangeEvent('hashchange'))
     },
     [],
   )

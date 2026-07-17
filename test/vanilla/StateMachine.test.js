@@ -138,6 +138,14 @@ describe('vanilla StateMachine: baseline', () => {
     warn.mockRestore()
   })
 
+  it('notifies subscribers synchronously after setQuery', () => {
+    const m = makeMachine({ name: 'app', initial: 'home', states: { home: {} } })
+    const listener = vi.fn()
+    m.subscribe(listener)
+    m.setQuery({ user: 'kim' })
+    expect(listener).toHaveBeenCalledWith(expect.objectContaining({ query: expect.objectContaining({ user: 'kim' }) }))
+  })
+
   it('subscribe notifies on state change and unsubscribe stops it', () => {
     const m = makeMachine({ name: 'app', initial: 'home', states: { home: {}, about: {} } })
     const listener = vi.fn()

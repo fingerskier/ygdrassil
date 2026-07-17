@@ -190,7 +190,8 @@ export class StateMachine {
     })
 
     const newHash = `#?${params.toString()}`
-    window.location.hash = newHash
+    window.history.pushState(null, '', newHash)
+    window.dispatchEvent(new HashChangeEvent('hashchange'))
   }
 
   /**
@@ -213,7 +214,9 @@ export class StateMachine {
     }
 
     if (nextState === this.currentState) {
-      return // No change
+      // State unchanged — but the query may have changed.
+      this._notifyListeners()
+      return
     }
 
     this._transitionToState(nextState)

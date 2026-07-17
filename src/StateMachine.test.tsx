@@ -724,6 +724,55 @@ describe('StateMachine', () => {
     })
   })
 
+  describe('setQuery write path', () => {
+    it('preserves a param another machine wrote in the same tick', async () => {
+      let setQueryA: ((o: Record<string, string | number | null | undefined>) => void) | undefined
+      let setQueryB: ((o: Record<string, string | number | null | undefined>) => void) | undefined
+      const GrabA = () => { setQueryA = useStateMachine().setQuery; return null }
+      const GrabB = () => { setQueryB = useStateMachine().setQuery; return null }
+
+      render(
+        <>
+          <StateMachine initial="a1" name="ma">
+            <State name="a1"><div>A1</div></State>
+            <GrabA />
+          </StateMachine>
+          <StateMachine initial="b1" name="mb">
+            <State name="b1"><div>B1</div></State>
+            <GrabB />
+          </StateMachine>
+        </>
+      )
+
+      await act(async () => {
+        setQueryA!({ alpha: 1 })
+        setQueryB!({ beta: 2 })
+      })
+
+      expect(window.location.hash).toContain('alpha=1')
+      expect(window.location.hash).toContain('beta=2')
+    })
+
+    it('replace=true clears only non-yg- params', async () => {
+      let setQueryFn: ((o: Record<string, string | number | null | undefined>, r?: boolean) => void) | undefined
+      const Grab = () => { setQueryFn = useStateMachine().setQuery; return null }
+
+      render(
+        <StateMachine initial="a1" name="ma">
+          <State name="a1"><div>A1</div></State>
+          <Grab />
+        </StateMachine>
+      )
+
+      await act(async () => { setQueryFn!({ old: 'x' }) })
+      await act(async () => { setQueryFn!({ fresh: 'y' }, true) })
+
+      expect(window.location.hash).toContain('yg-ma=a1')
+      expect(window.location.hash).toContain('fresh=y')
+      expect(window.location.hash).not.toContain('old=x')
+    })
+  })
+
   describe('query and setQuery', () => {
     it('reads query params from URL', () => {
       setHash('#?yg-test=page1&count=5&name=test')
