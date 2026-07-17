@@ -739,6 +739,41 @@ describe('StateMachine', () => {
       expect(screen.queryByText('Page 2')).not.toBeInTheDocument()
     })
 
+    it('marks controls for unreachable states with the unavailable class and aria-disabled', () => {
+      render(
+        <StateMachine initial="page1" name="test">
+          <State name="page1" transition={['page2']}><div>Page 1</div></State>
+          <State name="page2"><div>Page 2</div></State>
+          <State name="page3"><div>Page 3</div></State>
+          <StateButton to="page1">B1</StateButton>
+          <StateButton to="page2">B2</StateButton>
+          <StateButton to="page3">B3</StateButton>
+          <StateLink to="page3">L3</StateLink>
+        </StateMachine>
+      )
+
+      // page3 is not in page1's transition list
+      expect(screen.getByText('B3')).toHaveClass('unavailable')
+      expect(screen.getByText('B3')).toHaveAttribute('aria-disabled', 'true')
+      expect(screen.getByText('L3')).toHaveClass('unavailable')
+      // page2 is reachable; page1 is the active state — neither is unavailable
+      expect(screen.getByText('B2')).not.toHaveClass('unavailable')
+      expect(screen.getByText('B1')).not.toHaveClass('unavailable')
+    })
+
+    it('marks nothing unavailable when transitions are unrestricted', () => {
+      render(
+        <StateMachine initial="page1" name="test">
+          <State name="page1"><div>Page 1</div></State>
+          <State name="page2"><div>Page 2</div></State>
+          <StateButton to="page2">B2</StateButton>
+        </StateMachine>
+      )
+
+      expect(screen.getByText('B2')).not.toHaveClass('unavailable')
+      expect(screen.getByText('B2')).not.toHaveAttribute('aria-disabled')
+    })
+
     it('StateButton and StateLink mark the active control with aria-current', () => {
       render(
         <StateMachine initial="page1" name="test">

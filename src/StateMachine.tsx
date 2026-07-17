@@ -376,9 +376,12 @@ interface StateButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 
 export function StateButton({ data, replace, to, children, className, onClick, ...rest }: StateButtonProps) {
-  const { gotoState, is } = useStateMachine()
+  const { gotoState, is, availableTransitions } = useStateMachine()
 
-  const classNames = [className, is(to) ? 'active' : undefined]
+  const unavailable =
+    availableTransitions !== null && !is(to) && !availableTransitions.includes(to)
+
+  const classNames = [className, is(to) ? 'active' : undefined, unavailable ? 'unavailable' : undefined]
     .filter(Boolean)
     .join(' ')
 
@@ -387,6 +390,7 @@ export function StateButton({ data, replace, to, children, className, onClick, .
       {...rest}
       className={classNames}
       aria-current={is(to) ? 'page' : undefined}
+      aria-disabled={unavailable ? 'true' : undefined}
       onClick={e => {
         onClick?.(e)
         if (e.defaultPrevented) return
@@ -439,9 +443,12 @@ interface StateLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
 }
 
 export function StateLink({ data, replace, to, target, children, className, ...rest }: StateLinkProps) {
-  const { is, query, param } = useStateMachine()
+  const { is, query, param, availableTransitions } = useStateMachine()
 
-  const classNames = [className, is(to) ? 'active' : undefined]
+  const unavailable =
+    availableTransitions !== null && !is(to) && !availableTransitions.includes(to)
+
+  const classNames = [className, is(to) ? 'active' : undefined, unavailable ? 'unavailable' : undefined]
     .filter(Boolean)
     .join(' ')
 
@@ -470,6 +477,7 @@ export function StateLink({ data, replace, to, target, children, className, ...r
       {...(target ? { target } : {})}
       className={classNames}
       aria-current={is(to) ? 'page' : undefined}
+      aria-disabled={unavailable ? 'true' : undefined}
       href={href}
     >
       {children ?? to}

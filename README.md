@@ -92,6 +92,7 @@ Returns an object with:
 **Navigation Components**
 - `<StateButton to="stateName">` - Button for state navigation
   - Active control gets the `active` class and `aria-current="page"`
+  - When `to` is not reachable from the current state it gets the `unavailable` class and `aria-disabled="true"` (style it with line-through/subdued colors; clicking still fires `onTransitionDenied`)
   - Optional `onClick` runs first; call `e.preventDefault()` to cancel the navigation
   - Optional `data` (query params to merge) and `replace` (clear non-`yg-` params first)
   - Optional `className`
@@ -262,7 +263,7 @@ Use declarative HTML custom elements:
 **Custom Elements:**
 - `<state-machine name="app" initial="home">` - Container for states
 - `<state-def name="stateName" transition="state1,state2">` - Define a state; definitions are live (removals unregister, `transition` edits apply)
-- `<state-nav to="stateName" type="button|link">` - Navigation button/link
+- `<state-nav to="stateName" type="button|link">` - Navigation button/link (`active`/`aria-current` when current, `unavailable`/`aria-disabled` when unreachable)
 - `<state-query format="json|list">` - Display query parameters (values render as text, never HTML)
 
 **Events:**

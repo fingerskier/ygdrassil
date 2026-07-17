@@ -387,6 +387,15 @@ class StateNavElement extends HTMLElement {
       this._navElement.classList.remove('active')
       this._navElement.removeAttribute('aria-current')
     }
+    const allowed = this._machine.getAvailableTransitions()
+    const unavailable = !this._machine.is(to) && allowed !== null && !allowed.includes(to)
+    if (unavailable) {
+      this._navElement.classList.add('unavailable')
+      this._navElement.setAttribute('aria-disabled', 'true')
+    } else {
+      this._navElement.classList.remove('unavailable')
+      this._navElement.removeAttribute('aria-disabled')
+    }
   }
 
   _updateHref(to, data) {

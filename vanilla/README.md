@@ -171,6 +171,10 @@ Creates a navigation button or link.
 </state-nav>
 ```
 
+The rendered control carries `active` + `aria-current="page"` when its target
+is the current state, and `unavailable` + `aria-disabled="true"` when the
+target is not reachable from the current state.
+
 #### `<state-query>`
 
 Displays current query parameters (excluding `yg-` params). Keys and values
@@ -454,7 +458,10 @@ document.body.appendChild(link)
 Same options as `createStateButton`.
 
 Both helpers add the `active` class and `aria-current="page"` to the control
-for the machine's current state, and keep it updated via subscription.
+for the machine's current state, and the `unavailable` class plus
+`aria-disabled="true"` to controls whose target is not reachable from the
+current state. Both stay updated via subscription — style `.unavailable`
+with line-through or subdued colors to telegraph blocked moves.
 
 ## Advanced Usage
 

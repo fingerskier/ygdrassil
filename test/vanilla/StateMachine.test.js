@@ -146,6 +146,20 @@ describe('vanilla StateMachine: baseline', () => {
     expect(listener).toHaveBeenCalledWith(expect.objectContaining({ query: expect.objectContaining({ user: 'kim' }) }))
   })
 
+  it('createStateButton marks unreachable targets as unavailable', async () => {
+    const { createStateButton } = await import('../../vanilla/StateMachine.js')
+    const m = makeMachine({ name: 'app', initial: 'a', states: { a: { transition: ['b'] }, b: {}, c: {} } })
+    const toB = createStateButton(m, 'b')
+    const toC = createStateButton(m, 'c')
+    expect(toC.classList.contains('unavailable')).toBe(true)
+    expect(toC.getAttribute('aria-disabled')).toBe('true')
+    expect(toB.classList.contains('unavailable')).toBe(false)
+
+    m.gotoState('b') // b is unrestricted — everything reachable again
+    expect(toC.classList.contains('unavailable')).toBe(false)
+    expect(toC.getAttribute('aria-disabled')).toBeNull()
+  })
+
   it('createStateButton toggles aria-current with active state', async () => {
     const { createStateButton } = await import('../../vanilla/StateMachine.js')
     const m = makeMachine({ name: 'app', initial: 'home', states: { home: {}, about: {} } })

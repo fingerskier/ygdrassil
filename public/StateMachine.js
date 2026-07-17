@@ -402,6 +402,12 @@ export function createStateButton(machine, targetState, options = {}) {
     } else {
       button.removeAttribute('aria-current')
     }
+    if (isUnavailable(machine, targetState)) {
+      classes.push('unavailable')
+      button.setAttribute('aria-disabled', 'true')
+    } else {
+      button.removeAttribute('aria-disabled')
+    }
     button.className = classes.filter(Boolean).join(' ')
   }
 
@@ -438,6 +444,12 @@ export function createStateLink(machine, targetState, options = {}) {
     } else {
       link.removeAttribute('aria-current')
     }
+    if (isUnavailable(machine, targetState)) {
+      classes.push('unavailable')
+      link.setAttribute('aria-disabled', 'true')
+    } else {
+      link.removeAttribute('aria-disabled')
+    }
     link.className = classes.filter(Boolean).join(' ')
 
     // Build href
@@ -472,6 +484,16 @@ export function createStateLink(machine, targetState, options = {}) {
   machine.subscribe(updateHrefAndClass)
 
   return link
+}
+
+/**
+ * Whether a target state is reachable from the machine's current state.
+ * @private
+ */
+function isUnavailable(machine, targetState) {
+  if (machine.is(targetState)) return false
+  const allowed = machine.getAvailableTransitions()
+  return allowed !== null && !allowed.includes(targetState)
 }
 
 export default StateMachine

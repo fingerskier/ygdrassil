@@ -11,7 +11,10 @@ export default function NavigationDoc() {
       <p>
         Button component for navigating to states within the same machine. The
         active control carries the <code>active</code> class and{' '}
-        <code>aria-current="page"</code>.
+        <code>aria-current="page"</code>; a control whose target is not reachable
+        from the current state carries the <code>unavailable</code> class and{' '}
+        <code>aria-disabled="true"</code> so you can render it struck-through or
+        subdued.
       </p>
       <pre>{`<StateButton to='nextState' className='btn'>
   Go Next

@@ -98,6 +98,13 @@ a[aria-current='page'] {
   color: var(--accent, inherit);
   background-color: color-mix(in srgb, var(--accent, var(--muted)) 12%, transparent);
 }
+/* Target state not reachable from the current state */
+button.unavailable,
+a.unavailable {
+  color: var(--muted);
+  text-decoration: line-through;
+  opacity: 0.55;
+}
 button:focus-visible {
   outline: 2px solid var(--accent, var(--link));
   outline-offset: 2px;
