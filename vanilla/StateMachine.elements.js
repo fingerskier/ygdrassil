@@ -437,17 +437,31 @@ class StateQueryElement extends HTMLElement {
     const query = this._machine.getQuery()
 
     // Filter out yg- parameters
-    const filteredQuery = Object.fromEntries(
-      Object.entries(query).filter(([key]) => !key.startsWith('yg-'))
-    )
+    const entries = Object.entries(query).filter(([key]) => !key.startsWith('yg-'))
+
+    // Build DOM with textContent only — query strings are user-controlled
+    // via the URL and must never be interpolated into HTML.
+    this.textContent = ''
 
     if (format === 'json') {
-      this.innerHTML = `<pre>${JSON.stringify(filteredQuery, null, 2)}</pre>`
+      const pre = document.createElement('pre')
+      pre.textContent = JSON.stringify(Object.fromEntries(entries), null, 2)
+      this.appendChild(pre)
+    } else if (entries.length === 0) {
+      const p = document.createElement('p')
+      p.textContent = 'No query parameters'
+      this.appendChild(p)
     } else {
-      const items = Object.entries(filteredQuery)
-        .map(([key, value]) => `<li><strong>${key}:</strong> ${value}</li>`)
-        .join('')
-      this.innerHTML = items ? `<ul>${items}</ul>` : '<p>No query parameters</p>'
+      const ul = document.createElement('ul')
+      for (const [key, value] of entries) {
+        const li = document.createElement('li')
+        const strong = document.createElement('strong')
+        strong.textContent = `${key}:`
+        li.appendChild(strong)
+        li.appendChild(document.createTextNode(` ${value}`))
+        ul.appendChild(li)
+      }
+      this.appendChild(ul)
     }
   }
 }
